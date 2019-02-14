@@ -1,4 +1,4 @@
-import {FileGenerator, KeyChecker} from './walletcs-ether';
+import {FileGenerator, KeyChecker} from '../src/walletcs-ether';
 import {ethers} from "ethers";
 
 const tx = {

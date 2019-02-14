@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import {ethers} from 'ethers';
-import {EtherTransaction, EtherTransactionDecoder, EtherKeyPair} from '../ether/transactions';
+import {EtherTransaction, EtherTransactionDecoder, EtherKeyPair} from '../src/ether/transactions';
 
 const abiInterface = [
     {
