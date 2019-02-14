@@ -1,5 +1,5 @@
 {
-  "name": "walletcs-site",
+  "name": "walletcs",
   "version": "1.0.0",
   "scripts": {
     "test": "jest"
@@ -27,5 +27,20 @@
   },
   "resolutions": {
     "babel-core": "7.0.0-bridge.0"
-  }
+  },
+  "description": "Works with ethereum transactions",
+  "main": "src/",
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/exilion/walletcs-lib.git"
+  },
+  "keywords": [
+    "walletcs"
+  ],
+  "author": "Denys Rozlomii",
+  "license": "Apache-2.0",
+  "homepage": "https://bitbucket.org/exilion/walletcs-lib#readme"
 }
