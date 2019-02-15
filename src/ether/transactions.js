@@ -7,7 +7,6 @@ import { abi } from 'web3';
 import { addABI, decodeMethod} from 'abi-decoder';
 
 function isTokenTx(data){
-  console.log(data, '0x' === data);
   return !('0x' === data);
 }
 
