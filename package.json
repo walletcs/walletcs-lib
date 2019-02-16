@@ -1,6 +1,6 @@
 {
-  "name": "walletcs",
-  "version": "1.0.0",
+  "name": "walletcs-lib",
+  "version": "0.1.1",
   "scripts": {
     "test": "jest"
   },
