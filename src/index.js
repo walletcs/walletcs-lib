@@ -1,7 +1,7 @@
-import {EtherTransactionDecoder, EtherTransaction, EtherKeyPair} from './src/ether/transactions';
-import {FileTransactionGenerator, KeyTool} from './src/walletcs-ether';
+import {EtherTransactionDecoder, EtherTransaction, EtherKeyPair} from './ether/transactions';
+import {FileTransactionGenerator, KeyTool} from 'walletcs-ether';
 
-module.exports = {
+export default {
     EtherKeyPair: EtherKeyPair,
     EtherTransaction: EtherTransaction,
     EtherTransactionDecoder: EtherTransactionDecoder,

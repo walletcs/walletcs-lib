@@ -30,7 +30,8 @@
     "babel-core": "7.0.0-bridge.0"
   },
   "description": "Works with ethereum transactions",
-  "main": "src/",
+  "main": "src/index",
+  "typings": "src/index",
   "directories": {
     "test": "tests"
   },
