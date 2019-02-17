@@ -1,6 +1,6 @@
 {
   "name": "walletcs",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "scripts": {
     "test": "jest"
   },
@@ -40,6 +40,11 @@
   },
   "keywords": [
     "walletcs"
+  ],
+  "files": [
+    "src",
+    "types/index.d.ts",
+    "index.js"
   ],
   "author": "Denys Rozlomii",
   "license": "Apache-2.0",
