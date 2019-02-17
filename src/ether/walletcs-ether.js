@@ -31,19 +31,15 @@ export class FileTransactionGenerator {
 
 }
 
-export class KeyTool {
-  static checkPublic(key) {
-    return key.length !== 32;
+export function checkPublicKey(key) {
+    return key.length !== 32 && key.startsWith('0x');
   }
 
-  static checkPrivate(key) {
-    try {
-     let w = new utils.SigningKey(key);
-    }catch (e) {
-      return false
-    }
-
-    return true
+export function checkPrivateKey(key) {
+  try {
+    let w = new utils.SigningKey(key);
+  }catch (e) {
+    return false
   }
-
-}
+  return true
+  }

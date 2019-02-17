@@ -1,10 +1,11 @@
 import {EtherTransactionDecoder, EtherTransaction, EtherKeyPair} from './ether/transactions';
-import {FileTransactionGenerator, KeyTool} from './walletcs-ether';
+import {FileTransactionGenerator, checkPublicKey, checkPrivateKey} from './ether/walletcs-ether';
 
-export default class Ether {
-    txDecoder = EtherTransactionDecoder;
-    transaction = EtherTransaction;
-    keys = EtherKeyPair;
-    file = FileTransactionGenerator;
-    keyTools = KeyTool;
-}
+export {
+  EtherKeyPair,
+  EtherTransaction,
+  EtherTransactionDecoder,
+  FileTransactionGenerator,
+  checkPrivateKey,
+  checkPublicKey
+};

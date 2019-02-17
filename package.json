@@ -1,6 +1,6 @@
 {
   "name": "walletcs",
-  "version": "0.1.93",
+  "version": "0.2.0",
   "scripts": {
     "test": "jest"
   },
@@ -44,8 +44,7 @@
   ],
   "files": [
     "src",
-    "types/index.d.ts",
-    "index.js"
+    "src/ether"
   ],
   "author": "Denys Rozlomii",
   "license": "Apache-2.0",

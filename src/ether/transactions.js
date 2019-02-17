@@ -6,6 +6,8 @@ import {ethers, utils, Wallet} from 'ethers';
 import { abi } from 'web3';
 import { addABI, decodeMethod} from 'abi-decoder';
 
+'use strict';
+
 function isTokenTx(data){
   return !('0x' === data);
 }
