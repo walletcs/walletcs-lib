@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import {utils} from 'ethers';
 
-export default class FileTransactionGenerator {
+export class FileTransactionGenerator {
   constructor() {
     this.tx = [];
     this.contracts = []
@@ -31,7 +31,7 @@ export default class FileTransactionGenerator {
 
 }
 
-export default class KeyTool {
+export class KeyTool {
   static checkPublic(key) {
     return key.length !== 32;
   }

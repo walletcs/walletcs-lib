@@ -11,7 +11,7 @@ function isTokenTx(data){
 }
 
 
-export default class EtherTransactionDecoder {
+export class EtherTransactionDecoder {
   // signed tx -> object tx
   constructor(rawTx){
     this.tx = rawTx;
@@ -51,7 +51,7 @@ export default class EtherTransactionDecoder {
 
 }
 
-export default class EtherTransaction{
+export class EtherTransaction{
   // object tx -> signed tx
   async sign(privateKey, rawTx){
     // Promise
@@ -84,7 +84,7 @@ export default class EtherTransaction{
   }
 }
 
-export default class EtherKeyPair {
+export class EtherKeyPair {
   // Create and manipulate with private and public key
   static generatePair(){
     let keyPair = {};
