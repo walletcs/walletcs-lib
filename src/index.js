@@ -1,5 +1,5 @@
 import {EtherTransactionDecoder, EtherTransaction, EtherKeyPair} from './ether/transactions';
-import {FileTransactionGenerator, checkPublicKey, checkPrivateKey} from './ether/walletcs-ether';
+import {FileTransactionGenerator, checkPublicKey, checkPrivateKey, checkContractAddress} from './ether/walletcs-ether';
 
 export {
   EtherKeyPair,
@@ -7,5 +7,6 @@ export {
   EtherTransactionDecoder,
   FileTransactionGenerator,
   checkPrivateKey,
-  checkPublicKey
+  checkPublicKey,
+  checkContractAddress
 };

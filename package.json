@@ -1,6 +1,6 @@
 {
   "name": "walletcs",
-  "version": "0.2.0",
+  "version": "0.2.6",
   "scripts": {
     "test": "jest"
   },
@@ -24,7 +24,7 @@
     "babel-register": "^6.26.0",
     "ethers": "^4.0.25",
     "walletcs": "^0.1.0",
-    "web3": "^1.0.0-beta.46"
+    "web3": "^0.20.5"
   },
   "resolutions": {
     "babel-core": "7.0.0-bridge.0"

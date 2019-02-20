@@ -31,8 +31,20 @@ export class FileTransactionGenerator {
 
 }
 
+export function checkContractAddress(address){
+  if(!address){
+      return false
+    }
+
+    return address.length === 42 && address.startsWith('0x');
+}
+
 export function checkPublicKey(key) {
-    return key.length !== 32 && key.startsWith('0x');
+    if(!key){
+      return false
+    }
+
+    return key.length === 32 && key.startsWith('0x');
   }
 
 export function checkPrivateKey(key) {
