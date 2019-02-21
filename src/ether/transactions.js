@@ -72,7 +72,7 @@ export class EtherTransaction{
       }
     }
 
-    if(!isTokenTx(rawTx)){
+    if(!isTokenTx(rawTx['data'])){
       for(let key in etherRequiremets){
         if(!(etherRequiremets[key] in rawTx)){
           return false

@@ -1,4 +1,4 @@
-import {FileGenerator, KeyChecker} from '../src/walletcs-ether';
+import {EtherTransactionDecoder} from '../src/ether/walletcs-ether';
 import {ethers} from "ethers";
 
 const tx = {
@@ -14,7 +14,7 @@ const signedTx = '0x000000000000000000000000000000000000000000000000ffffffffffff
 test('file generate for unsigned tx', async ()=>{
   const pub = '0x0000000000000000000000000000000000001';
 
-  let file = new FileGenerator();
+  let file = new EtherTransactionDecoder();
   file.addTx(pub, tx);
 
   expect(file.generateJson()).toEqual(JSON.stringify({'transactions': [{'pub_key': pub, 'transaction': tx}]}))
@@ -23,7 +23,7 @@ test('file generate for unsigned tx', async ()=>{
 test('file generate for signed tx', async ()=>{
   const pub = '0x0000000000000000000000000000000000001';
 
-  let file = new FileGenerator();
+  let file = new EtherTransactionDecoder();
   file.addTx(pub, signedTx);
 
   expect(file.generateJson()).toEqual(JSON.stringify({'transactions': [{'pub_key': pub, 'transaction': signedTx}]}))
@@ -34,7 +34,7 @@ test('file generate for contract', async () => {
   const contractAddress = '0x000000000000000000000000000000000000f';
   const abi = [{'name': 'test'}];
 
-  let file = new FileGenerator();
+  let file = new EtherTransactionDecoder();
   file.addTx(pub, signedTx);
   file.addContract(contractAddress, abi);
 
