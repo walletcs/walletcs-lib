@@ -1,4 +1,5 @@
 import 'babel-polyfill';
+import {EtherTransactionDecoder} from 'walletcs';
 import {utils} from 'ethers';
 
 export class FileTransactionGenerator {
@@ -29,6 +30,42 @@ export class FileTransactionGenerator {
     return JSON.stringify(obj)
   }
 
+}
+
+export class FileTransactionReader {
+  constructor(file) {
+    this._file = file;
+    this._transactions = [];
+    this._contracts = [];
+  }
+  
+  get transactions(){
+    return this._transactions
+  }
+  
+  get contracts(){
+    return this._contracts
+  }
+  
+  parserFile() {
+    let json = JSON.parse(this.file);
+    
+    if(json['transactions'] === undefined || !json['transactions'].isArray() || json['contracts'] === undefined || !json['contracts'].isArray()){
+      throw 'File format is not correct'
+    }
+    // Decoder all transaction from file
+    let transactions = json.transactions;
+    for(let key in transactions){
+      let objTx = transactions[key];
+      let tx =EtherTransactionDecoder(objTx['transaction']).decodeTx();
+      this._transactions.push({pub_key: objTx['pub_key'], transaction: tx})
+    }
+    
+    //Set all contracts
+    this._contracts = json.contracts;
+  
+  }
+  
 }
 
 export function checkAddress(key) {
