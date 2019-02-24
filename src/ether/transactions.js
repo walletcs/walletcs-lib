@@ -20,25 +20,23 @@ export class EtherTransactionDecoder {
     this.abi = undefined;
   }
 
-  decodeTx() {
-    let result = this._decode();
-    result['gasLimit'] = result.gasLimit.toNumber();
-    result['gasPrice'] = result.gasPrice.toNumber();
+  getTransaction() {
+    this.result['gasLimit'] = this.result.gasLimit.toNumber();
+    this.result['gasPrice'] = this.result.gasPrice.toNumber();
 
-    if(isTokenTx(result['data'])){
-      result['data'] = EtherTransactionDecoder.decodeMethodContract(result['data']);
+    if(isTokenTx(this.result['data'])){
+      this.result['data'] = EtherTransactionDecoder.decodeMethodContract(this.result['data']);
     }
 
-    console.log(result);
-    return result
+    return this.result
   }
 
   addABI(abi){
     addABI(abi)
   }
 
-  _decode() {
-    return utils.parseTransaction(this.tx);
+  decode() {
+    this.result = utils.parseTransaction(this.tx);
   }
 
   static decodeMethodContract(hexMethod) {

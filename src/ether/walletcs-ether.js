@@ -50,22 +50,23 @@ export class FileTransactionReader {
   parserFile() {
     let json = JSON.parse(this.file);
     
-    if(json['transactions'] === undefined || !json['transactions'].isArray() || json['contracts'] === undefined || !json['contracts'].isArray()){
+    if(json['transactions'] === undefined || !json['transactions'].isArray() ||
+        json['contracts'] === undefined || !json['contracts'].isArray() ||
+        json['transaction'].length === 0 || json['contracts'] === 0){
       throw 'File format is not correct'
     }
-    // Decoder all transaction from file
+    //Set all contracts
+    this._contracts = json.contracts;
+    // Decode all transaction from file
     let transactions = json.transactions;
     for(let key in transactions){
       let objTx = transactions[key];
-      let tx =EtherTransactionDecoder(objTx['transaction']).decodeTx();
-      this._transactions.push({pub_key: objTx['pub_key'], transaction: tx})
+      let tx = new EtherTransactionDecoder(objTx['transaction']);
+      tx.decode();
+      tx.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
+      this._transactions.push({pub_key: objTx['pub_key'], transaction: tx.getTransaction()})
     }
-    
-    //Set all contracts
-    this._contracts = json.contracts;
-  
   }
-  
 }
 
 export function checkAddress(key) {
