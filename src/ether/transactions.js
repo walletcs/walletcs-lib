@@ -31,10 +31,9 @@ export class EtherTransactionDecoder {
     return this.result
   }
 
-  addABI(abi){
+  static addABI(abi){
     addABI(abi)
   }
-
   decode() {
     this.result = utils.parseTransaction(this.tx);
   }

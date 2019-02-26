@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import {EtherTransactionDecoder} from 'walletcs';
+import {EtherTransactionDecoder} from '../ether/transactions';
 import {utils} from 'ethers';
 
 export class FileTransactionGenerator {
@@ -14,6 +14,14 @@ export class FileTransactionGenerator {
 
   addTx(publicKey, tx){
     this.tx.push({'pub_key': publicKey, 'transaction': tx})
+  }
+  
+  deleteTx(index){
+    this.tx.splice(index, 1)
+  }
+  
+  deleteContract(index){
+    this.contracts.splice(index, 1)
   }
 
   generateJson(){
@@ -48,11 +56,10 @@ export class FileTransactionReader {
   }
   
   parserFile() {
-    let json = JSON.parse(this.file);
+    let json = JSON.parse(this._file);
     
-    if(json['transactions'] === undefined || !json['transactions'].isArray() ||
-        json['contracts'] === undefined || !json['contracts'].isArray() ||
-        json['transaction'].length === 0 || json['contracts'] === 0){
+    if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0 ||
+        json.contracts === undefined || !Array.isArray(json.contracts) || json.contracts.length === 0){
       throw 'File format is not correct'
     }
     //Set all contracts
@@ -61,10 +68,10 @@ export class FileTransactionReader {
     let transactions = json.transactions;
     for(let key in transactions){
       let objTx = transactions[key];
-      let tx = new EtherTransactionDecoder(objTx['transaction']);
+      let tx = new EtherTransactionDecoder(objTx.transaction);
       tx.decode();
       tx.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
-      this._transactions.push({pub_key: objTx['pub_key'], transaction: tx.getTransaction()})
+      this._transactions.push({pub_key: objTx.pub_key, transaction: tx.getTransaction()})
     }
   }
 }
