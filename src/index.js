@@ -1,12 +1,12 @@
-import {EtherTransactionDecoder, EtherTransaction, EtherKeyPair} from './ether/transactions';
-import {FileTransactionGenerator, FileTransactionReader, checkPrivateKey, checkAddress} from './ether/walletcs-ether';
+const transactions = require('./ether/transactions');
+const walletcs = require('./ether/walletcs-ether');
 
-export {
-  EtherKeyPair,
-  EtherTransaction,
-  EtherTransactionDecoder,
-  FileTransactionGenerator,
-  FileTransactionReader,
-  checkPrivateKey,
-  checkAddress
+module.exports = {
+  EtherKeyPair: transactions.EtherKeyPair,
+  EtherTransaction: transactions.EtherTransaction,
+  EtherTransactionDecoder: transactions.EtherTransactionDecoder,
+  FileTransactionGenerator: walletcs.FileTransactionGenerator,
+  FileTransactionReader: walletcs.FileTransactionReader,
+  checkPrivateKey: walletcs.checkPrivateKey,
+  checkAddress: walletcs.checkAddress
 };

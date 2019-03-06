@@ -21,9 +21,10 @@ export class EtherTransactionDecoder {
   }
 
   getTransaction() {
-    this.result['gasLimit'] = this.result.gasLimit.toNumber();
-    this.result['gasPrice'] = this.result.gasPrice.toNumber();
-
+    this.result.gasLimit = this.result.gasLimit.toNumber();
+    this.result.gasPrice = this.result.gasPrice.toNumber();
+    {this.result.value ? this.result.value = this.result.value.toNumber() : undefined}
+    
     if(isTokenTx(this.result['data'])){
       this.result['data'] = EtherTransactionDecoder.decodeMethodContract(this.result['data']);
     }
@@ -52,7 +53,7 @@ export class EtherTransactionDecoder {
 
 export class EtherTransaction{
   // object tx -> signed tx
-  async sign(privateKey, rawTx){
+  async static sign(privateKey, rawTx){
     // Promise
     let _wallet = new Wallet(privateKey);
 

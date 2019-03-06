@@ -3,17 +3,18 @@ import {EtherTransactionDecoder} from '../ether/transactions';
 import {utils} from 'ethers';
 
 export class FileTransactionGenerator {
-  constructor() {
+  constructor(publicKey) {
     this.tx = [];
-    this.contracts = []
+    this.contracts = [];
+    this._publicKey = publicKey;
   }
 
   addContract(address, abi){
     this.contracts.push({'contract': address, 'abi': abi})
   }
 
-  addTx(publicKey, tx){
-    this.tx.push({'pub_key': publicKey, 'transaction': tx})
+  addTx(contract, tx){
+    this.tx.push({'contract': contract, 'transaction': tx})
   }
   
   deleteTx(index){
@@ -23,10 +24,19 @@ export class FileTransactionGenerator {
   deleteContract(index){
     this.contracts.splice(index, 1)
   }
+  
+  getAbi(contractAddress){
+    for(let key in this.contracts){
+      if(contractAddress === this.contracts[key].contract){
+        return this.contracts[key].abi
+      }
+    }
+  }
 
   generateJson(){
     let obj = {};
-
+    obj['pub_key'] = this._publicKey;
+    
     if(this.tx.length !== 0){
       obj['transactions'] = this.tx
     }
@@ -70,8 +80,9 @@ export class FileTransactionReader {
       let objTx = transactions[key];
       let tx = new EtherTransactionDecoder(objTx.transaction);
       tx.decode();
-      tx.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
-      this._transactions.push({pub_key: objTx.pub_key, transaction: tx.getTransaction()})
+  
+      EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
+      this._transactions.push({contract: objTx.contract, transaction: tx.getTransaction()})
     }
   }
 }
