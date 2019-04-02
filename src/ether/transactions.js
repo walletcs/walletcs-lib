@@ -53,8 +53,9 @@ export class EtherTransactionDecoder {
 
 export class EtherTransaction{
   // object tx -> signed tx
-  async static sign(privateKey, rawTx){
+  static async sign(privateKey, rawTx){
     // Promise
+    rawTx.gasPrice = utils.bigNumberify(rawTx.gasPrice);
     let _wallet = new Wallet(privateKey);
 
     return await _wallet.sign(rawTx);
