@@ -42,7 +42,6 @@ export class TransactionBitcoin {
     let txBuilder = new TransactionBuilder(network);
     let _private = ECPair.fromWIF(privateKey, network);
     
-    console.log(rawTx)
     for(let key in rawTx.outxs){
       txBuilder.addInput(rawTx.outxs[key].txId, rawTx.outxs[key].vout)
     }
@@ -61,4 +60,9 @@ export class TransactionBitcoin {
       console.log(e)
     }
   }
-}
+};
+
+export const checkBitcoinAdress = (address) => {
+  let reg = new RegExp('^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$', 'gi');
+  return reg.test(address)
+};

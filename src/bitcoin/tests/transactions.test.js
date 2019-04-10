@@ -27,6 +27,5 @@ test('Test send transaction', async () => {
   let signature = TransactionBitcoin.sign(privateKey, rawTx);
   
   let result = await bitTx.broadcastTx(signature);
-  console.log(result);
-  expect(result.total).toEqual(4988000)
+  expect.arrayContaining(result.txrefs)
 });
