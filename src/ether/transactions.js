@@ -63,7 +63,7 @@ export class EtherTransaction{
 
   static checkCorrectTx(rawTx){
     let mainRequirements = ['gasLimit', 'gasPrice', 'data', 'to'];
-    let etherRequiremets = ['value', 'from'];
+    let etherRequirements = ['from', 'value'];
 
     for(let key in mainRequirements){
       if(!(mainRequirements[key] in rawTx)){
@@ -72,8 +72,8 @@ export class EtherTransaction{
     }
 
     if(!isTokenTx(rawTx['data'])){
-      for(let key in etherRequiremets){
-        if(!(etherRequiremets[key] in rawTx)){
+      for(let key in etherRequirements){
+        if(!(etherRequirements[key] in rawTx)){
           return false
         }
       }

@@ -1,4 +1,5 @@
 const transactions = require('./ether/transactions');
+const bitcoin = require('./bitcoin/transactions');
 const walletcs = require('./ether/walletcs-ether');
 
 module.exports = {
@@ -8,5 +9,6 @@ module.exports = {
   FileTransactionGenerator: walletcs.FileTransactionGenerator,
   FileTransactionReader: walletcs.FileTransactionReader,
   checkPrivateKey: walletcs.checkPrivateKey,
-  checkAddress: walletcs.checkAddress
+  checkAddress: walletcs.checkAddress,
+  BitcoinTransaction: bitcoin.TransactionBitcoin,
 };

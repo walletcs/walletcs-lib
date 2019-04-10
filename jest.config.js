@@ -5,7 +5,7 @@ const config = {
     clearMocks: true,
     resetMocks: true,
     resetModules: true,
-    testMatch: ['tests/**.js'],
+    testMatch: ['**/tests/**.js'],
     transformIgnorePatterns: ['node_modules/(?!(underscore-es)/)'],
     bail: true
 };
