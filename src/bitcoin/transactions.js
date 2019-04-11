@@ -78,5 +78,5 @@ export const checkBitcoinAdress = (address) => {
   }
   let re = /^[A-Z0-9]+$/i;
   
-  return !re.test(address)
+  return re.test(address)
 };
