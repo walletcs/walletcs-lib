@@ -32,7 +32,7 @@ export class FileTransactionGenerator {
       }
     }
   }
-
+  
   generateJson(){
     let obj = {};
     obj['pub_key'] = this._publicKey;

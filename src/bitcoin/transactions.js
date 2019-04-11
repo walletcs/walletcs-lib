@@ -15,18 +15,26 @@ export class TransactionBitcoin {
   
   async createTx(amount, address){
     if(!amount || !address) throw Error('\'amount\' and \'address\' are required arguments');
+    if(amount < 540) throw Error('Amount should be more 540 satoshi.');
     
     try{
       const response = await axios.get(this.urlAddress);
       const unspent = response.data.txrefs;
-
+      
+      if(response.data.balance < amount) throw Error('Too low balance.');
+      
+      let unspent_value = 0;
       for(let key in unspent){
-        this.rawTx.outxs.push({txId: unspent[key].tx_hash, vout: unspent[key].tx_output_n})
+        unspent_value += unspent[key].value;
+        
+        this.rawTx.outxs.push({txId: unspent[key].tx_hash, vout: unspent[key].tx_output_n});
+        
+        if(unspent_value > amount) break;
       }
   
       this.rawTx.amount = amount;
       this.rawTx.to = address;
-      this.rawTx.balance = response.data.balance;
+      this.rawTx.attempt_spent = unspent_value;
   
       return this.rawTx
       
@@ -46,8 +54,10 @@ export class TransactionBitcoin {
       txBuilder.addInput(rawTx.outxs[key].txId, rawTx.outxs[key].vout)
     }
     
+    let fee = rawTx.outxs.length*34 + 180 + 10; // 34 average size output. 180 average size input and 10 for over
+    
     txBuilder.addOutput(rawTx.to, rawTx.amount);
-    txBuilder.addOutput(rawTx.from, rawTx.balance - rawTx.amount);
+    txBuilder.addOutput(rawTx.from, rawTx.attempt_spent - rawTx.amount - fee);
     txBuilder.sign(0, _private);
     
     return txBuilder.build().toHex();
@@ -63,6 +73,14 @@ export class TransactionBitcoin {
 };
 
 export const checkBitcoinAdress = (address) => {
-  let reg = new RegExp('^[13][a-km-zA-HJ-NP-Z1-9]{25,34}$', 'gi');
-  return reg.test(address)
+  if (address.length < 26 || address.length > 35) {
+    return false;
+  }
+  
+  let re = /^[A-Z0-9]+$/i;
+  if (!re.test(address)) {
+    return false;
+  }
+  
+  return true;
 };

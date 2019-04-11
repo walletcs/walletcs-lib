@@ -1,6 +1,4 @@
-import bitcoin from 'bitcoinjs-lib';
-import {TransactionBitcoin} from '../transactions';
-import {ethers} from "ethers";
+import {checkBitcoinAdress, TransactionBitcoin} from '../transactions';
 
 let network = 'test3';
 let address = 'mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X';
@@ -28,4 +26,8 @@ test('Test send transaction', async () => {
   
   let result = await bitTx.broadcastTx(signature);
   expect.arrayContaining(result.txrefs)
+});
+
+test('Test check address bitcoin', async () => {
+  expect(checkBitcoinAdress(address)).toEqual(true)
 });
