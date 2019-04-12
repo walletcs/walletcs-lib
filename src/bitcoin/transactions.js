@@ -70,6 +70,11 @@ export class TransactionBitcoin {
       console.log(e)
     }
   }
+  
+  static generateKeyPair = () => {
+    let keyPair = ECPair.makeRandom();
+    return [keyPair.getAddress(), keyPair.toWIF()]
+  }
 };
 
 export const checkBitcoinAdress = (address) => {
