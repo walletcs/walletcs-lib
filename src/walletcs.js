@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import {EtherTransactionDecoder} from '../ether/transactions';
+import {EtherTransactionDecoder} from './ether/transactions';
 import {utils} from 'ethers';
 
 export class FileTransactionGenerator {
@@ -26,6 +26,7 @@ export class FileTransactionGenerator {
   }
   
   getAbi(contractAddress){
+    // Only for ether contract transactions
     for(let key in this.contracts){
       if(contractAddress === this.contracts[key].contract){
         return this.contracts[key].abi

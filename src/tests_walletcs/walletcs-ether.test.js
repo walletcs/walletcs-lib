@@ -1,4 +1,4 @@
-import {FileTransactionGenerator, FileTransactionReader} from '../walletcs-ether';
+import {FileTransactionGenerator, FileTransactionReader} from '../walletcs';
 import {ethers} from "ethers";
 
 let privateKey = new ethers.utils.SigningKey('F13BD89E70DFC84BF46743A5824AD2CA485C61D998994048510F758CC47E4D6D');

@@ -2,12 +2,23 @@ import 'babel-polyfill';
 import {TransactionBuilder, ECPair, networks} from 'bitcoinjs-lib';
 import axios from 'axios';
 
+const _chooseNetwork = (network) =>
+    // Choose between two networks testnet and main
+{
+  if (!network && (network !== 'test3' || network !== 'main')) {
+    throw Error('network parameter is required and must be one of "main" or "test3"')
+  }
+  if (network === 'test3'){
+    return networks.testnet
+  }
+  else {
+    return networks.bitcoin
+  }
+};
 
 export class TransactionBitcoin {
   constructor(publicKey, network) {
-    if (!network) {
-      network = 'test3'
-    }
+    network = _chooseNetwork(network);
     this.urlAddress = `https://api.blockcypher.com/v1/btc/${network}/addrs/${publicKey}?unspentOnly=true`;
     this.urlPush = `https://api.blockcypher.com/v1/btc/${network}/txs/push`;
     this.rawTx = {'outxs': [], from: publicKey};
@@ -46,16 +57,19 @@ export class TransactionBitcoin {
   }
   
   static sign(privateKey, rawTx, network){
-    if(!network) network = networks.testnet;
+    network = _chooseNetwork(network);
     let txBuilder = new TransactionBuilder(network);
     let _private = ECPair.fromWIF(privateKey, network);
+    
+    // If the response transaction returns 0 outputs
+    if (!rawTx.outxs.length) throw Error('Error balance for current account.Check you account balance.');
     
     for(let key in rawTx.outxs){
       txBuilder.addInput(rawTx.outxs[key].txId, rawTx.outxs[key].vout)
     }
     
     let fee = rawTx.outxs.length*34 + 180 + 10; // 34 average size output. 180 average size input and 10 for over
-    
+
     txBuilder.addOutput(rawTx.to, rawTx.amount);
     txBuilder.addOutput(rawTx.from, rawTx.attempt_spent - rawTx.amount - fee);
     txBuilder.sign(0, _private);
@@ -70,11 +84,6 @@ export class TransactionBitcoin {
       console.log(e)
     }
   }
-  
-  static generateKeyPair = () => {
-    let keyPair = ECPair.makeRandom();
-    return [keyPair.getAddress(), keyPair.toWIF()]
-  }
 };
 
 export const checkBitcoinAdress = (address) => {
@@ -85,3 +94,25 @@ export const checkBitcoinAdress = (address) => {
   
   return re.test(address)
 };
+
+export class BitcoinCheckPair {
+  
+  static generatePair = (network) => {
+    let _network = _chooseNetwork(network);
+    let keyPair = ECPair.makeRandom({network: _network});
+    return [keyPair.getAddress(), keyPair.toWIF()]
+  };
+  
+  static recoveryPublicKey(privateKey, network){
+    let _network = _chooseNetwork(network);
+    let keyPair = ECPair.fromWIF(privateKey, _network);
+    return keyPair.getAddress()
+    
+  }
+  
+  static checkPair(pubK, privateK, network){
+    let _network = _chooseNetwork(network);
+    let keyPair = ECPair.fromWIF(privateK, _network);
+    return keyPair.getAddress() === privateK
+  }
+}

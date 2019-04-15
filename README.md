@@ -1,5 +1,5 @@
 ### Packet is wrapper for work with blockchain crypto currency. ###
-walletcs-ether.js:
+walletcs.js:
 
 1. class FileGenerator
 Class for name

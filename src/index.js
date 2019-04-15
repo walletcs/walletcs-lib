@@ -1,6 +1,6 @@
 const transactions = require('./ether/transactions');
 const bitcoin = require('./bitcoin/transactions');
-const walletcs = require('./ether/walletcs-ether');
+const walletcs = require('./walletcs');
 
 module.exports = {
   EtherKeyPair: transactions.EtherKeyPair,
