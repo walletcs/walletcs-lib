@@ -1,4 +1,4 @@
-import {checkBitcoinAdress, TransactionBitcoin} from '../transactions';
+import {BitcoinCheckPair, checkBitcoinAdress, TransactionBitcoin} from '../transactions';
 
 let network = 'test3';
 let address = 'mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X';
@@ -30,4 +30,23 @@ test('Test send transaction', async () => {
 
 test('Test check address bitcoin', async () => {
   expect(checkBitcoinAdress(address)).toEqual(true)
+});
+
+test('Test generate pair name', async () => {
+  let [address, key] = BitcoinCheckPair.generatePair('test3');
+  expect(checkBitcoinAdress(address)).toEqual(true);
+  expect.stringContaining(key)
+});
+
+test('Test recovery public key', async () => {
+  let [address, key] = BitcoinCheckPair.generatePair('test3');
+  let recovered_address = BitcoinCheckPair.recoveryPublicKey(key, 'test3');
+  
+  expect(address).toEqual(recovered_address);
+});
+
+test('Test check address', async () => {
+  let [address, key] = BitcoinCheckPair.generatePair('test3');
+  
+  expect(BitcoinCheckPair.checkPair(address, key, network)).toBeTruthy()
 });

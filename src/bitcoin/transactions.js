@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import {TransactionBuilder, ECPair, networks} from 'bitcoinjs-lib';
+import {TransactionBuilder, ECPair, networks, payments} from 'bitcoinjs-lib';
 import axios from 'axios';
 
 const _chooseNetwork = (network) =>
@@ -100,19 +100,22 @@ export class BitcoinCheckPair {
   static generatePair = (network) => {
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.makeRandom({network: _network});
-    return [keyPair.getAddress(), keyPair.toWIF()]
+    const { address } = payments.p2pkh({ pubkey: keyPair.publicKey });
+    return [address, keyPair.toWIF()]
   };
   
   static recoveryPublicKey(privateKey, network){
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.fromWIF(privateKey, _network);
-    return keyPair.getAddress()
+    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey })
+    return address ;
     
   }
   
   static checkPair(pubK, privateK, network){
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.fromWIF(privateK, _network);
-    return keyPair.getAddress() === privateK
+    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey })
+    return address === pubK
   }
 }
