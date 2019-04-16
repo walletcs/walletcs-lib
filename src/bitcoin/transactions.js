@@ -20,7 +20,6 @@ export class TransactionBitcoin {
   constructor(publicKey, network) {
     _chooseNetwork(network);
     this.urlAddress = `https://api.blockcypher.com/v1/btc/${network}/addrs/${publicKey}?unspentOnly=true`;
-    this.urlPush = `https://api.blockcypher.com/v1/btc/${network}/txs/push`;
     this.rawTx = {'outxs': [], from: publicKey};
   }
   
@@ -83,9 +82,10 @@ export class TransactionBitcoin {
     return txBuilder.build().toHex();
   }
   
-  async broadcastTx(rawTx){
+  static async broadcastTx(rawTx, network){
+   let urlPush = `https://api.blockcypher.com/v1/btc/${network}/txs/push`;
     try{
-      return await axios.post(this.urlPush, {tx: rawTx})
+      return await axios.post(urlPush, {tx: rawTx})
     }catch (e) {
       console.log(e)
     }

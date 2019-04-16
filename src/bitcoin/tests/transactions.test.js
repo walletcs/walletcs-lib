@@ -18,13 +18,13 @@ test('Test sing transaction', async() => {
   expect.stringContaining(signature);
 });
 
-test('Test send transaction', async () => {
+test('Test broadcast transaction', async () => {
   let bitTx = new TransactionBitcoin(address, network);
   let rawTx = await bitTx.createTx(1000, address);
   
   let signature = TransactionBitcoin.sign(privateKey, rawTx, network);
   
-  let result = await bitTx.broadcastTx(signature);
+  let result = await TransactionBitcoin.broadcastTx(signature, network);
   expect.arrayContaining(result.txrefs)
 });
 
