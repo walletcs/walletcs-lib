@@ -18,7 +18,7 @@ const _chooseNetwork = (network) =>
 
 export class TransactionBitcoin {
   constructor(publicKey, network) {
-    network = _chooseNetwork(network);
+    _chooseNetwork(network);
     this.urlAddress = `https://api.blockcypher.com/v1/btc/${network}/addrs/${publicKey}?unspentOnly=true`;
     this.urlPush = `https://api.blockcypher.com/v1/btc/${network}/txs/push`;
     this.rawTx = {'outxs': [], from: publicKey};
@@ -26,12 +26,13 @@ export class TransactionBitcoin {
   
   async createTx(amount, address){
     if(!amount || !address) throw Error('\'amount\' and \'address\' are required arguments');
+    amount = parseFloat(amount);
     if(amount < 540) throw Error('Amount should be more 540 satoshi.');
-    
+
     try{
       const response = await axios.get(this.urlAddress);
+  
       const unspent = response.data.txrefs;
-      
       if(response.data.balance < amount) throw Error('Too low balance.');
       
       let unspent_value = 0;
@@ -47,6 +48,13 @@ export class TransactionBitcoin {
       this.rawTx.to = address;
       this.rawTx.attempt_spent = unspent_value;
   
+      let fee = (this.rawTx.outxs.length*34 + 180 + 10 + 34) * 44; // 34 average size output. 180 average size input and 10 for over. 44 satoshis/byte
+      let change = this.rawTx.attempt_spent - this.rawTx.amount - fee;
+      if (0 < change < 540) throw Error('Error balance for current account.Check you account balance.');
+      if (change < 0) throw Error('Error balance for current account.Check you account balance.');
+      
+      this.rawTx.fee = fee;
+      if(change !== 0) this.rawTx.change = change;
       return this.rawTx
       
     }catch (e) {
@@ -62,16 +70,14 @@ export class TransactionBitcoin {
     let _private = ECPair.fromWIF(privateKey, network);
     
     // If the response transaction returns 0 outputs
-    if (!rawTx.outxs.length) throw Error('Error balance for current account.Check you account balance.');
+    if (!rawTx.outxs.length) throw Error('Error balance for current account.Check your transaction');
     
     for(let key in rawTx.outxs){
       txBuilder.addInput(rawTx.outxs[key].txId, rawTx.outxs[key].vout)
     }
     
-    let fee = rawTx.outxs.length*34 + 180 + 10; // 34 average size output. 180 average size input and 10 for over
-
     txBuilder.addOutput(rawTx.to, rawTx.amount);
-    txBuilder.addOutput(rawTx.from, rawTx.attempt_spent - rawTx.amount - fee);
+    txBuilder.addOutput(rawTx.from, rawTx.change);
     txBuilder.sign(0, _private);
     
     return txBuilder.build().toHex();
@@ -97,7 +103,7 @@ export const checkBitcoinAdress = (address) => {
 
 export class BitcoinCheckPair {
   
-  static generatePair = (network) => {
+  static generatePair(network){
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.makeRandom({network: _network});
     const { address } = payments.p2pkh({ pubkey: keyPair.publicKey });
@@ -107,7 +113,7 @@ export class BitcoinCheckPair {
   static recoveryPublicKey(privateKey, network){
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.fromWIF(privateKey, _network);
-    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey })
+    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey });
     return address ;
     
   }
@@ -115,7 +121,7 @@ export class BitcoinCheckPair {
   static checkPair(pubK, privateK, network){
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.fromWIF(privateK, _network);
-    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey })
+    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey });
     return address === pubK
   }
 }
