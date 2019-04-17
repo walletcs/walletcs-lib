@@ -106,14 +106,14 @@ export class BitcoinCheckPair {
   static generatePair(network){
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.makeRandom({network: _network});
-    const { address } = payments.p2pkh({ pubkey: keyPair.publicKey });
+    const { address } = payments.p2pkh({ pubkey: keyPair.publicKey, network: _network });
     return [address, keyPair.toWIF()]
   };
   
   static recoveryPublicKey(privateKey, network){
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.fromWIF(privateKey, _network);
-    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey });
+    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey, network: _network });
     return address ;
     
   }
@@ -121,7 +121,7 @@ export class BitcoinCheckPair {
   static checkPair(pubK, privateK, network){
     let _network = _chooseNetwork(network);
     let keyPair = ECPair.fromWIF(privateK, _network);
-    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey });
+    let { address } = payments.p2pkh({ pubkey: keyPair.publicKey,  network: _network });
     return address === pubK
   }
 }
