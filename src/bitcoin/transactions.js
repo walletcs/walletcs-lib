@@ -88,11 +88,8 @@ export class TransactionBitcoin {
   
   static async broadcastTx(rawTx, network){
    let urlPush = `https://api.blockcypher.com/v1/btc/${network}/txs/push`;
-    try{
-      return await axios.post(urlPush, {tx: rawTx})
-    }catch (e) {
-      console.log(e)
-    }
+   return await axios.post(urlPush, JSON.stringify({tx: rawTx}))
+   
   }
 };
 
