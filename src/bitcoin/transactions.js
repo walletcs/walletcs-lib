@@ -45,7 +45,10 @@ export class TransactionBitcoin {
   
       this.rawTx.amount = amount;
       this.rawTx.to = address;
+      
+      if (unspent_value === 0) throw Error('Error balance for current account.Check you account balance.');
       this.rawTx.attempt_spent = unspent_value;
+  
   
       let fee = (this.rawTx.outxs.length*34 + 180 + 10 + 34) * 44; // 34 average size output. 180 average size input and 10 for over. 44 satoshis/byte
       let change = this.rawTx.attempt_spent - this.rawTx.amount - fee;
