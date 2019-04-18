@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import {EtherTransactionDecoder} from './ether/transactions';
 import {utils} from 'ethers';
-import { Transaction } from 'bitcoinjs-lib'
+import { Transaction, address} from 'bitcoinjs-lib'
 
 export class FileTransactionGenerator {
   constructor(publicKey) {
@@ -88,7 +88,7 @@ export class FileTransactionReader {
     }
   }
   
-  _parserBitcoinFile(network){
+  _parserBitcoinFile(){
     let json = JSON.parse(this._file);
   
     if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
@@ -97,13 +97,22 @@ export class FileTransactionReader {
     // Decode all transaction from file
     let transactions = json.transactions;
     for(let key in transactions){
+      
       let objTx = transactions[key];
       let tx = Transaction.fromHex(objTx.transaction);
-      // let result = tx.decode();
-      this._transactions.push({contract: null, transaction: tx})
+  
+      let params = [];
+      tx.outs.forEach((out) => {
+        try {
+          params.push({value: out.value, to: address.fromOutputScript(out.script)})
+        } catch (e) {
+          console.log(e)
+        }
+      });
+      this._transactions.push({contract: null, transaction: tx, params: params})
     }
   }
-  
+  // bitcoin boolean
   parserFile(bitcoin) {
     if(!bitcoin) this._parserEtherFile();
     if(bitcoin) this._parserBitcoinFile()
