@@ -99,9 +99,8 @@ export class FileTransactionReader {
     for(let key in transactions){
       let objTx = transactions[key];
       let tx = Transaction.fromHex(objTx.transaction);
-      console.log(tx);
       // let result = tx.decode();
-      this._transactions.push({contract: null, transaction: result})
+      this._transactions.push({contract: null, transaction: tx})
     }
   }
   

@@ -58,10 +58,8 @@ test('file bitcoin reader transaction', async () => {
   let network = 'test3';
   let [address, privateKey] = BitcoinCheckPair.generatePair(network) ;
   const file = {"pub_key":address,"transactions":[{"contract":null,"transaction":{"outxs":[{"txId":"74ea8f331e84178096c69a8ded12bbe32572de309f69ccbbe9442eda97898d0b","vout":0}],"from":address,"amount":100000,"to":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","attempt_spent":9236254}}]};
-  let tx = TransactionBitcoin.sign(privateKey, file.transactions[0].transaction, network);
-  console.log(tx);
-  // file.transactions[0].transaction = await wallet.sign(file.transactions[0].transaction);
-  // let ftr = new FileTransactionReader(JSON.stringify(file));
-  // ftr.parserFile()
+  file.transactions[0].transaction = TransactionBitcoin.sign(privateKey, file.transactions[0].transaction, network);
+  let ftr = new FileTransactionReader(JSON.stringify(file));
+  ftr.parserFile()
 });
 
