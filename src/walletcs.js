@@ -1,6 +1,7 @@
 import 'babel-polyfill';
 import {EtherTransactionDecoder} from './ether/transactions';
 import {utils} from 'ethers';
+import { Transaction } from 'bitcoinjs-lib'
 
 export class FileTransactionGenerator {
   constructor(publicKey) {
@@ -66,9 +67,9 @@ export class FileTransactionReader {
     return this._contracts
   }
   
-  parserFile() {
+  _parserEtherFile() {
     let json = JSON.parse(this._file);
-    
+  
     if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0 ||
         json.contracts === undefined || !Array.isArray(json.contracts) || json.contracts.length === 0){
       throw 'File format is not correct'
@@ -81,10 +82,32 @@ export class FileTransactionReader {
       let objTx = transactions[key];
       let tx = new EtherTransactionDecoder(objTx.transaction);
       tx.decode();
-  
+    
       EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
       this._transactions.push({contract: objTx.contract, transaction: tx.getTransaction()})
     }
+  }
+  
+  _parserBitcoinFile(network){
+    let json = JSON.parse(this._file);
+  
+    if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
+      throw 'File format is not correct'
+    }
+    // Decode all transaction from file
+    let transactions = json.transactions;
+    for(let key in transactions){
+      let objTx = transactions[key];
+      let tx = Transaction.fromHex(objTx.transaction);
+      console.log(tx);
+      // let result = tx.decode();
+      this._transactions.push({contract: null, transaction: result})
+    }
+  }
+  
+  parserFile(bitcoin) {
+    if(!bitcoin) this._parserEtherFile();
+    if(bitcoin) this._parserBitcoinFile()
   }
 }
 

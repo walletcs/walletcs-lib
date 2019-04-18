@@ -7,6 +7,7 @@ let privateKey = '93Fd7g7K2iduaVBnK8RxksxSLyCwiwiJ6r9juTQTckAdYCH3irD';
 test('Test create transaction', async() => {
   let bitTx = new TransactionBitcoin(address, network);
   let rawTx = await bitTx.createTx(1000, address);
+  console.log(rawTx)
   expect.arrayContaining(rawTx.outxs)
 });
 

@@ -1,4 +1,5 @@
 import {FileTransactionGenerator, FileTransactionReader} from '../walletcs';
+import {TransactionBitcoin, BitcoinCheckPair} from '../bitcoin/transactions';
 import {ethers} from "ethers";
 
 let privateKey = new ethers.utils.SigningKey('F13BD89E70DFC84BF46743A5824AD2CA485C61D998994048510F758CC47E4D6D');
@@ -52,3 +53,15 @@ test('file reader transaction', async () => {
   let ftr = new FileTransactionReader(JSON.stringify(file));
   ftr.parserFile()
 });
+
+test('file bitcoin reader transaction', async () => {
+  let network = 'test3';
+  let [address, privateKey] = BitcoinCheckPair.generatePair(network) ;
+  const file = {"pub_key":address,"transactions":[{"contract":null,"transaction":{"outxs":[{"txId":"74ea8f331e84178096c69a8ded12bbe32572de309f69ccbbe9442eda97898d0b","vout":0}],"from":address,"amount":100000,"to":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","attempt_spent":9236254}}]};
+  let tx = TransactionBitcoin.sign(privateKey, file.transactions[0].transaction, network);
+  console.log(tx);
+  // file.transactions[0].transaction = await wallet.sign(file.transactions[0].transaction);
+  // let ftr = new FileTransactionReader(JSON.stringify(file));
+  // ftr.parserFile()
+});
+
