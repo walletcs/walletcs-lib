@@ -24,7 +24,6 @@ test('Test broadcast transaction', async () => {
   let rawTx = await bitTx.createTx(1000, address);
   
   let signature = TransactionBitcoin.sign(privateKey, rawTx, network);
-  
   let result = await TransactionBitcoin.broadcastTx(signature, network);
   expect.arrayContaining(result.txrefs)
 });

@@ -14,18 +14,18 @@ export class FileTransactionGenerator {
     this.contracts.push({'contract': address, 'abi': abi})
   }
 
-  addTx(contract, tx){
-    this.tx.push({'contract': contract, 'transaction': tx})
+  addTx(contract, tx, network){
+    this.tx.push({'contract': contract, 'transaction': tx, network: network})
   }
-  
+
   deleteTx(index){
     this.tx.splice(index, 1)
   }
-  
+
   deleteContract(index){
     this.contracts.splice(index, 1)
   }
-  
+
   getAbi(contractAddress){
     // Only for ether contract transactions
     for(let key in this.contracts){
@@ -34,11 +34,11 @@ export class FileTransactionGenerator {
       }
     }
   }
-  
+
   generateJson(){
     let obj = {};
     obj['pub_key'] = this._publicKey;
-    
+
     if(this.tx.length !== 0){
       obj['transactions'] = this.tx
     }
@@ -58,18 +58,18 @@ export class FileTransactionReader {
     this._transactions = [];
     this._contracts = [];
   }
-  
+
   get transactions(){
     return this._transactions
   }
-  
+
   get contracts(){
     return this._contracts
   }
-  
+
   _parserEtherFile() {
     let json = JSON.parse(this._file);
-  
+
     if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0 ||
         json.contracts === undefined || !Array.isArray(json.contracts) || json.contracts.length === 0){
       throw 'File format is not correct'
@@ -82,25 +82,25 @@ export class FileTransactionReader {
       let objTx = transactions[key];
       let tx = new EtherTransactionDecoder(objTx.transaction);
       tx.decode();
-    
+
       EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
       this._transactions.push({contract: objTx.contract, transaction: tx.getTransaction()})
     }
   }
-  
+
   _parserBitcoinFile(){
     let json = JSON.parse(this._file);
-  
+
     if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
       throw 'File format is not correct'
     }
     // Decode all transaction from file
     let transactions = json.transactions;
     for(let key in transactions){
-      
+
       let objTx = transactions[key];
       let tx = Transaction.fromHex(objTx.transaction);
-  
+
       let params = [];
       tx.outs.forEach((out) => {
         try {
