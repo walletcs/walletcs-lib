@@ -12,5 +12,7 @@ module.exports = {
   checkAddress: walletcs.checkAddress,
   BitcoinTransaction: bitcoin.TransactionBitcoin,
   checkBitcoinAddress: bitcoin.checkBitcoinAdress,
-  BitcoinCheckPair: bitcoin.BitcoinCheckPair
+  BitcoinCheckPair: bitcoin.BitcoinCheckPair,
+  addressIsMainNet: bitcoin.addressIsMainNet,
+  privateKeyIsMainNet: bitcoin.privateKeyIsMainNet
 };
