@@ -23,7 +23,7 @@ export class EtherTransactionDecoder {
   getTransaction() {
     this.result.gasLimit = this.result.gasLimit.toNumber();
     this.result.gasPrice = this.result.gasPrice.toNumber();
-    {this.result.value ? this.result.value = this.result.value.toNumber() : 0}
+    {this.result.value ? this.result.value = this.result.value.toNumber() * Math.pow(10, 18) : 0}
     
     if(isTokenTx(this.result['data'])){
       this.result['data'] = EtherTransactionDecoder.decodeMethodContract(this.result['data']);
