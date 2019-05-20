@@ -1,5 +1,5 @@
 import 'babel-polyfill';
-import {EtherTransactionDecoder} from './index';
+import {EtherTransactionDecoder} from './ether/transactions';
 import {utils} from 'ethers';
 import { Transaction, address} from 'bitcoinjs-lib'
 
