@@ -70,8 +70,7 @@ export class FileTransactionReader {
   _parserEtherFile() {
     let json = JSON.parse(this._file);
 
-    if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0 ||
-        json.contracts === undefined || !Array.isArray(json.contracts) || json.contracts.length === 0){
+    if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
       throw 'File format is not correct'
     }
     //Set all contracts
@@ -83,7 +82,9 @@ export class FileTransactionReader {
       let tx = new EtherTransactionDecoder(objTx.transaction);
       tx.decode();
 
-      EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
+      if (json.contracts) {
+        EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
+      }
       this._transactions.push({contract: objTx.contract, transaction: tx.getTransaction()})
     }
   }
