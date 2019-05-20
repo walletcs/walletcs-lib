@@ -104,6 +104,27 @@ export const checkBitcoinAdress = (address) => {
   return re.test(address)
 };
 
+export const addressIsMainNet = (address) => {
+  const prefixes = ['1', '3', 'xpub', 'bc1'];
+  for (let i = 0; i < prefixes.length; i += 1) {
+    if (address.startsWith(prefixes[i])){
+      return true
+    }
+  }
+  return false;
+}
+
+export const privateKeyIsMainNet = (pr) => {
+  const prefixes = ['K', 'L', '5', 'xprv'];
+  for (let i = 0; i < prefixes.length; i += 1) {
+    if (pr.startsWith(pr[i])){
+      return true
+    }
+  }
+  return false;
+
+}
+
 export class BitcoinCheckPair {
 
   static generatePair(network){
