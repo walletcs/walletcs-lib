@@ -1,107 +1,138 @@
-/*
-* Simple wrapper for create, parse and sign "ethereum" transactions.
-*/
 import 'babel-polyfill';
-import {ethers, utils, Wallet} from 'ethers';
-import { abi } from 'web3';
-import { addABI, decodeMethod} from 'abi-decoder';
+import {EtherTransactionDecoder} from './ether/transactions';
+import {utils} from 'ethers';
+import { Transaction, address} from 'bitcoinjs-lib'
 
-'use strict';
-
-function isTokenTx(data){
-  return !('0x' === data);
-}
-
-
-export class EtherTransactionDecoder {
-  // signed tx -> object tx
-  constructor(rawTx){
-    this.tx = rawTx;
-    this.abi = undefined;
+export class FileTransactionGenerator {
+  constructor(publicKey) {
+    this.tx = [];
+    this.contracts = [];
+    this._publicKey = publicKey;
   }
 
-  getTransaction() {
-    this.result.gasLimit = this.result.gasLimit.toNumber();
-    this.result.gasPrice = this.result.gasPrice.toNumber();
-    {this.result.value ? this.result.value = this.result.value.toNumber() : 0}
-    
-    if(isTokenTx(this.result['data'])){
-      this.result['data'] = EtherTransactionDecoder.decodeMethodContract(this.result['data']);
-    }
-
-    return this.result
+  addContract(address, abi){
+    this.contracts.push({'contract': address, 'abi': abi})
   }
 
-  static addABI(abi){
-    addABI(abi)
-  }
-  decode() {
-    this.result = utils.parseTransaction(this.tx);
+  addTx(contract, tx, network){
+    this.tx.push({'contract': contract, 'transaction': tx, network: network})
   }
 
-  static decodeMethodContract(hexMethod) {
-    return decodeMethod(hexMethod);
+  deleteTx(index){
+    this.tx.splice(index, 1)
   }
 
-  async verifySiganture(message, publicK){
-    // Promise
-    return await utils.verifyMessage(message, this.tx);
+  deleteContract(index){
+    this.contracts.splice(index, 1)
   }
 
-
-}
-
-export class EtherTransaction{
-  // object tx -> signed tx
-  static async sign(privateKey, rawTx){
-    // Promise
-    rawTx.gasPrice = utils.bigNumberify(rawTx.gasPrice);
-    let _wallet = new Wallet(privateKey);
-
-    return await _wallet.sign(rawTx);
-  }
-
-  static checkCorrectTx(rawTx){
-    let mainRequirements = ['gasLimit', 'gasPrice', 'data', 'to'];
-    let etherRequirements = ['value'];
-
-    for(let key in mainRequirements){
-      if(!(mainRequirements[key] in rawTx)){
-        return false
+  getAbi(contractAddress){
+    // Only for ether contract transactions
+    for(let key in this.contracts){
+      if(contractAddress === this.contracts[key].contract){
+        return this.contracts[key].abi
       }
     }
+  }
 
-    if(!isTokenTx(rawTx['data'])){
-      for(let key in etherRequirements){
-        if(!(etherRequirements[key] in rawTx)){
-          return false
+  generateJson(){
+    let obj = {};
+    obj['pub_key'] = this._publicKey;
+
+    if(this.tx.length !== 0){
+      obj['transactions'] = this.tx
+    }
+
+    if(this.contracts.length !== 0){
+      obj['contracts'] = this.contracts
+    }
+
+    return JSON.stringify(obj)
+  }
+
+}
+
+export class FileTransactionReader {
+  constructor(file) {
+    this._file = file;
+    this._transactions = [];
+    this._contracts = [];
+  }
+
+  get transactions(){
+    return this._transactions
+  }
+
+  get contracts(){
+    return this._contracts
+  }
+
+  _parserEtherFile(transfer) {
+    let json = JSON.parse(this._file);
+
+    if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
+      throw 'File format is not correct'
+    }
+    //Set all contracts
+    this._contracts = json.contracts;
+    // Decode all transaction from file
+    let transactions = json.transactions;
+    for(let key in transactions){
+      let objTx = transactions[key];
+      let tx = new EtherTransactionDecoder(objTx.transaction);
+      tx.decode();
+
+      if (!transfer) {
+        EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
+      }
+      this._transactions.push({contract: objTx.contract, transaction: tx.getTransaction()})
+    }
+  }
+
+  _parserBitcoinFile(){
+    let json = JSON.parse(this._file);
+
+    if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
+      throw 'File format is not correct'
+    }
+    // Decode all transaction from file
+    let transactions = json.transactions;
+    for(let key in transactions){
+
+      let objTx = transactions[key];
+      let tx = Transaction.fromHex(objTx.transaction);
+
+      let params = [];
+      tx.outs.forEach((out) => {
+        try {
+          params.push({value: out.value, to: address.fromOutputScript(out.script)})
+        } catch (e) {
+          console.log(e)
         }
-      }
-    }else{
-      if(!('to' in rawTx)) return false;
+      });
+      this._transactions.push({contract: null, transaction: tx, params: params})
+    }
+  }
+  // bitcoin boolean
+  parserFile(bitcoin, transfer) {
+    if(!bitcoin) this._parserEtherFile(transfer);
+    if(bitcoin) this._parserBitcoinFile()
+  }
+}
+
+export function checkAddress(key) {
+    if(!key){
+      return false
     }
 
-    return true
-  }
-}
-
-export class EtherKeyPair {
-  // Create and manipulate with private and public key
-  static generatePair(){
-    let keyPair = {};
-    let _wallet = Wallet.createRandom();
-    keyPair['address'] = _wallet.address;
-    keyPair['privateKey'] = _wallet.privateKey;
-    return keyPair
+    return key.length === 42 && key.startsWith('0x');
   }
 
-  static recoveryPublicKey(privateKey){
-    let pk = new ethers.utils.SigningKey(privateKey);
-    let w = new Wallet(pk);
-    return w.address
+export function checkPrivateKey(key) {
+  try {
+    let w = new utils.SigningKey(key);
+  }catch (e) {
+    return false
   }
-
-  static checkPair(pubK, privateK){
-    return pubK === EtherKeyPair.recoveryPublicKey(privateK)
+  return true
   }
-}
