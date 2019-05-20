@@ -23,7 +23,7 @@ export class EtherTransactionDecoder {
   getTransaction() {
     this.result.gasLimit = this.result.gasLimit.toNumber();
     this.result.gasPrice = this.result.gasPrice.toNumber();
-    {this.result.value ? this.result.value = this.result.value.toNumber() * Math.pow(10, 18) : 0}
+    {this.result.value ? this.result.value = this.result.value.toNumber() : 0}
     
     if(isTokenTx(this.result['data'])){
       this.result['data'] = EtherTransactionDecoder.decodeMethodContract(this.result['data']);
@@ -52,6 +52,67 @@ export class EtherTransactionDecoder {
 }
 
 export class EtherTransaction{
+
+  static createTx = (publicKey, contractAddress, methodParams, abi, methodName) => {
+    // Normalization for transaction params
+    if (methodParams.find(val => val.name === 'from')) {
+      return this._normalizeTransferTransaction(methodParams);
+    }
+    return this._normalizeContractTransaction(publicKey, contractAddress, methodParams, abi, methodName);
+  };
+
+  static _normalizeContractTransaction = (publicKey, addressCon, methodParams, abi, methodName) => {
+    const defaultValues = ['gasPrice', 'gasLimit', 'nonce'];
+  
+    const newTx = {};
+    const newParams = [];
+    const inter = new ethers.utils.Interface(abi);
+  
+    for (let i = 0; i < methodParams.length; i++) {
+      const l = methodParams[i];
+      if (defaultValues.includes(l.name)) {
+        newTx[l.name] = l.name === 'gasPrice' ? ethers.utils.bigNumberify(l.value) : l.value;
+      } else if (inter.functions[methodName].payable && l.name === 'value') {
+        newTx[l.name] = l.value;
+      } else {
+        newParams.push(l.value);
+      }
+    }
+  
+    let txData;
+  
+    try {
+      txData = inter.functions[methodName].encode(newParams);
+    } catch (e) {
+      console.log(e, methodName);
+    }
+  
+    newTx.data = txData;
+    newTx.to = addressCon;
+  
+    return newTx;
+  };
+  
+  
+  static _normalizeTransferTransaction = (methodParams) => {
+    const newTx = {};
+  
+    for (let i = 0; i < methodParams.length; i++) {
+      const l = methodParams[i];
+      if (l.name === 'from') continue;
+      if (l.name === 'value') {
+        newTx[l.name] = parseFloat(l.value) * Math.pow(10, 18);
+      } else if (l.name === 'gasPrice') {
+        newTx[l.name] = ethers.utils.bigNumberify(l.value);
+      } else if (l.name === 'nonce') {
+        newTx[l.name] = parseInt(l.value);
+      } else {
+        newTx[l.name] = l.value;
+      }
+    }
+    newTx.data = '0x';
+    return newTx;
+  };
   // object tx -> signed tx
   static async sign(privateKey, rawTx){
     // Promise
