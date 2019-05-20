@@ -67,7 +67,7 @@ export class FileTransactionReader {
     return this._contracts
   }
 
-  _parserEtherFile(transfer) {
+  _parserEtherFile() {
     let json = JSON.parse(this._file);
 
     if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
@@ -82,7 +82,7 @@ export class FileTransactionReader {
       let tx = new EtherTransactionDecoder(objTx.transaction);
       tx.decode();
 
-      if (!transfer) {
+      if (tx.data !== '0x') {
         EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
       }
       this._transactions.push({contract: objTx.contract, transaction: tx.getTransaction()})
@@ -115,7 +115,7 @@ export class FileTransactionReader {
   }
   // bitcoin boolean
   parserFile(bitcoin, transfer) {
-    if(!bitcoin) this._parserEtherFile(transfer);
+    if(!bitcoin) this._parserEtherFile();
     if(bitcoin) this._parserBitcoinFile()
   }
 }
