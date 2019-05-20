@@ -122,7 +122,6 @@ export const privateKeyIsMainNet = (pr) => {
     }
   }
   return false;
-
 }
 
 export class BitcoinCheckPair {
