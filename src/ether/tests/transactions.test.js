@@ -1,6 +1,6 @@
 import Web3 from 'web3';
-import {ethers} from 'ethers';
-import {EtherTransaction, EtherTransactionDecoder, EtherKeyPair} from '../transactions';
+import {ethers, utils} from 'ethers';
+import {EtherTransaction, EtherTransactionDecoder, EtherKeyPair, representTx} from '../transactions';
 
 const abiInterface = [
     {
@@ -501,7 +501,7 @@ async function createTx () {
 
 async function createTokenTx(){
   let accounsts = await provider.listAccounts();
-  let contract = web3.eth.Contract(abiInterface, tokenAddress);
+  let contract = new web3.eth.Contract(abiInterface, tokenAddress);
   let amount = 1;
   let to = accounsts[1];
 
@@ -524,7 +524,7 @@ async function createTransfer(){
   const tx = {
     to: '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3',
     gasLimit: 21000,
-    value: 1,
+    value: utils.parseEther('1'),
     nonce: await wallet.getTransactionCount(),
     gasPrice: ethers.utils.bigNumberify("20000000000"),
     data: '0x'
@@ -591,8 +591,15 @@ test('test sign transfer', async () => {
   try {
     const tx = await createTransfer();
     const signTx = await  EtherTransaction.sign('c304a1266482d6ffefc2d1b67f58a8ff3a0a8c922d96d21cf67ce5ff7278c00e', tx);
-    console.log(signTx);
+    expect.stringContaining(signTx)
   } catch(e) {
     console.log(e);
   }
+});
+
+test('test represent tx', async () => {
+  let tx = await createTransfer();
+  let newTx = representTx(tx);
+
+  expect(newTx.value).toEqual('1.0');
 })
