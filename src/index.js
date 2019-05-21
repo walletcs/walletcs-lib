@@ -14,5 +14,6 @@ module.exports = {
   checkBitcoinAddress: bitcoin.checkBitcoinAdress,
   BitcoinCheckPair: bitcoin.BitcoinCheckPair,
   addressIsMainNet: bitcoin.addressIsMainNet,
-  privateKeyIsMainNet: bitcoin.privateKeyIsMainNet
+  privateKeyIsMainNet: bitcoin.privateKeyIsMainNet,
+  representTX: transactions.representTx
 };

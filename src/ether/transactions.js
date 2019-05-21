@@ -53,7 +53,7 @@ export class EtherTransactionDecoder {
 
 export class EtherTransaction{
 
-  static createTx = (publicKey, contractAddress, methodParams, abi, methodName) => {
+  static createTx(publicKey, contractAddress, methodParams, abi, methodName){
     // Normalization for transaction params
     if (methodParams.find(val => val.name === 'from')) {
       return this._normalizeTransferTransaction(methodParams);
@@ -61,7 +61,7 @@ export class EtherTransaction{
     return this._normalizeContractTransaction(publicKey, contractAddress, methodParams, abi, methodName);
   };
 
-  static _normalizeContractTransaction = (publicKey, addressCon, methodParams, abi, methodName) => {
+  static _normalizeContractTransaction(publicKey, addressCon, methodParams, abi, methodName) {
     const defaultValues = ['gasPrice', 'gasLimit', 'nonce'];
   
     const newTx = {};
@@ -73,7 +73,7 @@ export class EtherTransaction{
       if (defaultValues.includes(l.name)) {
         newTx[l.name] = l.name === 'gasPrice' ? ethers.utils.bigNumberify(l.value) : l.value;
       } else if (inter.functions[methodName].payable && l.name === 'value') {
-        newTx[l.name] = l.value;
+        newTx[l.name] = utils.parseEther(l.value);
       } else {
         newParams.push(l.value);
       }
@@ -94,14 +94,14 @@ export class EtherTransaction{
   };
   
   
-  static _normalizeTransferTransaction = (methodParams) => {
+  static _normalizeTransferTransaction(methodParams) {
     const newTx = {};
   
     for (let i = 0; i < methodParams.length; i++) {
       const l = methodParams[i];
       if (l.name === 'from') continue;
       if (l.name === 'value') {
-        newTx[l.name] = parseFloat(l.value) * Math.pow(10, 18);
+        newTx[l.name] = utils.parseEther(l.value);
       } else if (l.name === 'gasPrice') {
         newTx[l.name] = ethers.utils.bigNumberify(l.value);
       } else if (l.name === 'nonce') {
@@ -165,4 +165,10 @@ export class EtherKeyPair {
   static checkPair(pubK, privateK){
     return pubK === EtherKeyPair.recoveryPublicKey(privateK)
   }
+}
+
+export const representTx = (tx) => {
+  let newTx = JSON.parse(JSON.stringify(tx));
+  newTx.value = utils.formatEther(tx.value);
+  return newTx;
 }
