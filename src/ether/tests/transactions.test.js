@@ -521,14 +521,15 @@ async function createTransfer(){
   let amount = 1;
   let to = accounsts[1];
 
-  const tx = {
-    to: '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3',
-    gasLimit: 21000,
-    value: utils.parseEther('1'),
-    nonce: await wallet.getTransactionCount(),
-    gasPrice: ethers.utils.bigNumberify("20000000000"),
-    data: '0x'
-  };
+  // const tx = {
+  //   to: '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3',
+  //   gasLimit: 21000,
+  //   value: utils.parseEther('1'),
+  //   nonce: await wallet.getTransactionCount(),
+  //   gasPrice: ethers.utils.bigNumberify("20000000000"),
+  //   data: '0x'
+  // };
+  const tx = {"gasLimit":21000,"gasPrice": {"_hex":"0x3b9aca00"},"nonce":33,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value": {"_hex":"0x0de0b6b3a7640000"},"data":"0x"};
   return tx
 }
 
@@ -590,7 +591,9 @@ test('test check not correct transaction', async () => {
 test('test sign transfer', async () => {
   try {
     const tx = await createTransfer();
+    console.log(tx);
     const signTx = await  EtherTransaction.sign('c304a1266482d6ffefc2d1b67f58a8ff3a0a8c922d96d21cf67ce5ff7278c00e', tx);
+    console.log(signTx);
     expect.stringContaining(signTx)
   } catch(e) {
     console.log(e);
