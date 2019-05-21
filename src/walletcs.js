@@ -82,7 +82,7 @@ export class FileTransactionReader {
       let tx = new EtherTransactionDecoder(objTx.transaction);
       tx.decode();
 
-      if (tx.data !== '0x') {
+      if (tx.result.data !== '0x') {
         EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
       }
       this._transactions.push({contract: objTx.contract, transaction: tx.getTransaction()})
