@@ -117,7 +117,9 @@ export class EtherTransaction{
   static async sign(privateKey, rawTx){
     // Promise
     rawTx.gasPrice = utils.bigNumberify(rawTx.gasPrice);
-    rawTx.value = utils.bigNumberify(rawTx.value);
+    if (rawTx.value) {
+      rawTx.value = utils.bigNumberify(rawTx.value);
+    }
     let _wallet = new Wallet(privateKey);
 
     return await _wallet.sign(rawTx);
