@@ -148,3 +148,11 @@ export class BitcoinCheckPair {
     return address === pubK
   }
 }
+
+export const representBtcTx = (tx) => {
+  let newTx = JSON.parse(JSON.stringify(tx));
+  if (tx.amount) {
+    newTx.amount = tx.amount / Math.pow(10, 8);
+  }
+  return newTx;
+}

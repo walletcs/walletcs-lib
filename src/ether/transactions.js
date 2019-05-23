@@ -170,7 +170,7 @@ export class EtherKeyPair {
   }
 }
 
-export const representTx = (tx) => {
+export const representEthTx = (tx) => {
   let newTx = JSON.parse(JSON.stringify(tx));
   if (tx.value) {
     newTx.value = utils.formatEther(tx.value);
