@@ -25,8 +25,8 @@ export class TransactionBitcoin {
 
   async createTx(amount, address, value){
     if(!amount || !address) throw Error('\'amount\' and \'address\' are required arguments');
-    if(!value) amount = amount * 100000000 // If not value convert btc to satoshi
     amount = parseFloat(amount);
+    if(!value) amount = amount * Math.pow(10, 8)  // If not value convert btc to satoshi
     if(amount < 540) throw Error('Amount should be more 540 satoshi.');
 
     try{
