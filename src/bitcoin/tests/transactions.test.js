@@ -14,7 +14,7 @@ test('Test create transaction', async() => {
 test('Test sing transaction', async() => {
   let bitTx = new TransactionBitcoin(address, network);
   let rawTx = await bitTx.createTx(1000, address);
-  
+
   let signature = TransactionBitcoin.sign(privateKey, rawTx, network);
   expect.stringContaining(signature);
 });
@@ -22,7 +22,7 @@ test('Test sing transaction', async() => {
 test('Test broadcast transaction', async () => {
   let bitTx = new TransactionBitcoin(address, network);
   let rawTx = await bitTx.createTx(1000, address);
-  
+
   let signature = TransactionBitcoin.sign(privateKey, rawTx, network);
   let result = await TransactionBitcoin.broadcastTx(signature, network);
   expect.arrayContaining(result.txrefs)
@@ -41,12 +41,12 @@ test('Test generate pair name', async () => {
 test('Test recovery public key', async () => {
   let [address, key] = BitcoinCheckPair.generatePair('test3');
   let recovered_address = BitcoinCheckPair.recoveryPublicKey(key, 'test3');
-  
+
   expect(address).toEqual(recovered_address);
 });
 
 test('Test check address', async () => {
   let [address, key] = BitcoinCheckPair.generatePair('test3');
-  
+
   expect(BitcoinCheckPair.checkPair(address, key, network)).toBeTruthy()
 });

@@ -69,6 +69,7 @@ export class TransactionBitcoin {
   }
 
   static sign(privateKey, rawTx, network){
+    console.log(rawTx);
     network = _chooseNetwork(network);
     let txBuilder = new TransactionBuilder(network);
     let _private = ECPair.fromWIF(privateKey, network);
@@ -81,18 +82,14 @@ export class TransactionBitcoin {
     }
 
     txBuilder.addOutput(rawTx.to, rawTx.amount);
-    console.log(rawTx.from, rawTx.change, rawTx);
+
     txBuilder.addOutput(rawTx.from, rawTx.change);
-    let vouts = [];
-    for (let key in rawTx.outxs) {
-      if (vouts.includes(rawTx.outxs[key].vout)) {
-        txBuilder.sign(rawTx.outxs[key].vout, _private);
-        vouts.push(rawTx.outxs[key].vout)
+
+    for (let i = 0; i < rawTx.outxs.length; i += 1) {
+      txBuilder.sign(i, _private);
       }
-    }
 
-
-    return txBuilder.build().toHex();
+    return txBuilder.build().toHex()
   }
 
   static async broadcastTx(rawTx, network){
