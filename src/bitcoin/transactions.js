@@ -83,7 +83,14 @@ export class TransactionBitcoin {
     txBuilder.addOutput(rawTx.to, rawTx.amount);
     console.log(rawTx.from, rawTx.change, rawTx);
     txBuilder.addOutput(rawTx.from, rawTx.change);
-    txBuilder.sign(0, _private);
+    let vouts = [];
+    for (let key in rawTx.outxs) {
+      if (vouts.includes(rawTx.outxs[key].vout)) {
+        txBuilder.sign(rawTx.outxs[key].vout, _private);
+        vouts.push(rawTx.outxs[key].vout)
+      }
+    }
+
 
     return txBuilder.build().toHex();
   }
