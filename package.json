@@ -1,6 +1,6 @@
 {
   "name": "walletcs",
-  "version": "0.7.13",
+  "version": "0.8.13",
   "scripts": {
     "test": "jest"
   },
@@ -24,6 +24,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-register": "^6.26.0",
     "bitcoinjs-lib": "^5.0.1",
+    "bitcore-lib": "^8.3.3",
     "ethers": "^4.0.25",
     "walletcs": "^0.1.0",
     "web3": "^0.20.5"
