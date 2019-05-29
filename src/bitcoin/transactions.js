@@ -20,6 +20,10 @@ const _chooseNetwork = (network) =>
   }
 };
 
+const _convertToSatoshi = (val) => {
+  return parseFloat(val)*Math.pow(10, 8)
+};
+
 export class TransactionBitcoin {
   constructor(publicKey, network) {
     _chooseNetwork(network);
@@ -68,11 +72,13 @@ export class TransactionBitcoin {
 
   async createBatchTx(amount, address) {
     const [unspentTransactions, balance] = await this.getUnspentTx();
-  
+    amount = amount.map( val => _convertToSatoshi(val));
+    
     const getSum = (total, num) => {
       return total + num;
     };
     if (amount.reduce(getSum) > balance) throw Error('Too low balance.');
+  
     if (amount.find( val => val < minSum)) throw new Error('Amount should be more 540 satoshi.');
   
     for (let i = 0; i < unspentTransactions.length; i++) {
