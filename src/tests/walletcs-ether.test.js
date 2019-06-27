@@ -104,4 +104,4 @@ test('Convert csv to json', async () => {
   expect(jsonFile[1].from).toEqual(publicKey);
   expect(jsonFile[0].gasLimit).toEqual(21000);
   expect(jsonFile[1].gasLimit).toEqual(21000);
-});
+}, 10000);
