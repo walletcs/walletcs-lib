@@ -1,7 +1,7 @@
 import { ethers } from 'ethers';
 import Papa from 'papaparse';
 
-export default class ConverterCSVToTxObject {
+export class ConverterCSVToTxObject {
   constructor(file, publicKey, network){
     this._csvFile = file;
     this._publicKey = publicKey;

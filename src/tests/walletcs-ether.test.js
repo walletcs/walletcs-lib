@@ -2,7 +2,7 @@ import {FileTransactionGenerator, FileTransactionReader} from '../walletcs';
 import {TransactionBitcoin, BitcoinCheckPair} from '../bitcoin/transactions';
 import {ethers} from "ethers";
 import {EtherKeyPair} from "../ether/transactions";
-import ConverterCSVToJSON from '../utils'
+import { ConverterCSVToTxObject } from '../utils'
 
 let privateKey = new ethers.utils.SigningKey('F13BD89E70DFC84BF46743A5824AD2CA485C61D998994048510F758CC47E4D6D');
 const publicKey = '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3';
@@ -96,7 +96,7 @@ test('Convert csv to json', async () => {
   let csvContent = ""
       + rows.map(e => e.join(",")).join("\n");
   
-  let parser = new ConverterCSVToJSON(csvContent, publicKey, network);
+  let parser = new ConverterCSVToTxObject(csvContent, publicKey, network);
   let jsonFile = await parser.convert();
   expect(jsonFile[0].to).toEqual(address);
   expect(jsonFile[1].to).toEqual(address2);
