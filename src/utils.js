@@ -33,8 +33,8 @@ export class ConverterCSVToTxObject {
         tx['gasLimit'] = 21000;
         const tx_copy = shallowCopy(tx);
         tx_copy.value = ethers.utils.parseEther(tx_copy.value);
-        tx['gasPrice'] = await provider.estimateGas(tx_copy);
-       
+        let bigNumberGasPrice = await provider.estimateGas(tx_copy);
+        tx['gasPrice'] = bigNumberGasPrice.toNumber();
       }
       return paramsArray;
     }
