@@ -1,6 +1,12 @@
 import { ethers } from 'ethers';
 import Papa from 'papaparse';
 
+export const shallowCopy = (object) => {
+  const result = {};
+  for (const key in object) { result[key] = object[key]; }
+  return result;
+};
+
 export class ConverterCSVToTxObject {
   constructor(file, publicKey, network){
     this._csvFile = file;
@@ -24,6 +30,10 @@ export class ConverterCSVToTxObject {
           tx['from'] = this._publicKey;
           paramsArray.push(tx)
         }
+        tx['gasLimit'] = 21000;
+        const tx_copy = shallowCopy(tx);
+        tx_copy.value = ethers.utils.parseEther(tx_copy.value);
+        tx['gasPrice'] = await provider.estimateGas(tx_copy);
        
       }
       return paramsArray;
