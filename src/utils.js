@@ -12,9 +12,9 @@ export default class ConverterCSVToJSON {
   async convert () {
     if (this._csvFile && this._publicKey){
       let provider = ethers.getDefaultProvider(this._network);
-      let fileTx = new FileTransactionGenerator(this._publicKey);
       let nonce = await provider.getTransactionCount(this._publicKey);
       let result = Papa.parse(this._csvFile);
+      let paramsArray = [];
       for (let i = 0; i < result.data.length; i += 1){
         let tx = {data: '0x'};
         tx['nonce'] = nonce + i;
@@ -22,11 +22,9 @@ export default class ConverterCSVToJSON {
         tx['to'] = row[0];
         tx['value'] = ethers.utils.parseEther(row[1]);
         tx['from'] = this._publicKey;
-        tx['gasLimit'] = 21000;
-        tx['gasPrice'] = await provider.estimateGas(tx);
-        fileTx.addTx(null, tx, this._network)
+        paramsArray.push(tx)
       }
-      return fileTx.generateJson();
+      return paramsArray;
     }
     return null;
   }

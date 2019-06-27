@@ -97,10 +97,9 @@ test('Convert csv to json', async () => {
       + rows.map(e => e.join(",")).join("\n");
   
   let parser = new ConverterCSVToJSON(csvContent, publicKey, network);
-  let jsonFile = JSON.parse(await parser.convert());
-  expect(jsonFile.transactions[0].transaction.to).toEqual(address);
-  expect(jsonFile.transactions[1].transaction.to).toEqual(address2);
-  expect(jsonFile.transactions[0].transaction.from).toEqual(publicKey);
-  expect(jsonFile.transactions[1].transaction.from).toEqual(publicKey);
-  expect(jsonFile.pub_key).toEqual(publicKey);
+  let jsonFile = await parser.convert();
+  expect(jsonFile[0].to).toEqual(address);
+  expect(jsonFile[1].to).toEqual(address2);
+  expect(jsonFile[0].from).toEqual(publicKey);
+  expect(jsonFile[1].from).toEqual(publicKey);
 });
