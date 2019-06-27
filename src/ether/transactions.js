@@ -152,11 +152,8 @@ export class EtherTransaction{
 export class EtherKeyPair {
   // Create and manipulate with private and public key
   static generatePair(){
-    let keyPair = {};
     let _wallet = Wallet.createRandom();
-    keyPair['address'] = _wallet.address;
-    keyPair['privateKey'] = _wallet.privateKey;
-    return keyPair
+    return [_wallet.address, _wallet.privateKey]
   }
 
   static recoveryPublicKey(privateKey){

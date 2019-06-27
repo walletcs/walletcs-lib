@@ -1,6 +1,7 @@
 const transactions = require("./ether/transactions");
 const bitcoin = require("./bitcoin/transactions");
 const walletcs = require("./walletcs");
+const utils = require("./utils");
 
 module.exports = {
   EtherKeyPair: transactions.EtherKeyPair,
@@ -17,5 +18,5 @@ module.exports = {
   privateKeyIsMainNet: bitcoin.privateKeyIsMainNet,
   representEthTx: transactions.representEthTx,
   representBtcTx: bitcoin.representBtcTx,
-
+  ConverterCSVToJSON: utils.ConverterCSVToJSON
 };

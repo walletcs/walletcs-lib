@@ -240,7 +240,7 @@ export const addressIsMainNet = (address) => {
     }
   }
   return false;
-}
+};
 
 export const privateKeyIsMainNet = (pr) => {
   const prefixes = ['K', 'L', '5', 'xprv'];
@@ -250,7 +250,7 @@ export const privateKeyIsMainNet = (pr) => {
     }
   }
   return false;
-}
+};
 
 export class BitcoinCheckPair {
 

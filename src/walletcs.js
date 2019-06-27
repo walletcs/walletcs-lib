@@ -2,6 +2,7 @@ import 'babel-polyfill';
 import {EtherTransactionDecoder} from './ether/transactions';
 import {utils} from 'ethers';
 import { Transaction, address} from 'bitcoinjs-lib'
+import Papa from 'papaparse';
 
 export class FileTransactionGenerator {
   constructor(publicKey) {
