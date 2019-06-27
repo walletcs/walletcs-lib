@@ -16,11 +16,11 @@ export default class ConverterCSVToJSON {
       let result = Papa.parse(this._csvFile);
       let paramsArray = [];
       for (let i = 0; i < result.data.length; i += 1){
-        let tx = {data: '0x'};
+        let tx = {};
         tx['nonce'] = nonce + i;
         let row = result.data[i];
         tx['to'] = row[0];
-        tx['value'] = ethers.utils.parseEther(row[1]);
+        tx['value'] = row[1];
         tx['from'] = this._publicKey;
         paramsArray.push(tx)
       }
