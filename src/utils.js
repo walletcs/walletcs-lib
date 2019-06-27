@@ -28,13 +28,13 @@ export class ConverterCSVToTxObject {
           tx['to'] = row[0];
           tx['value'] = row[1];
           tx['from'] = this._publicKey;
+          tx['gasLimit'] = 21000;
+          const tx_copy = shallowCopy(tx);
+          tx_copy.value = ethers.utils.parseEther(tx_copy.value);
+          let bigNumberGasPrice = await provider.estimateGas(tx_copy);
+          tx['gasPrice'] = bigNumberGasPrice.toNumber();
           paramsArray.push(tx)
         }
-        tx['gasLimit'] = 21000;
-        const tx_copy = shallowCopy(tx);
-        tx_copy.value = ethers.utils.parseEther(tx_copy.value);
-        let bigNumberGasPrice = await provider.estimateGas(tx_copy);
-        tx['gasPrice'] = bigNumberGasPrice.toNumber();
       }
       return paramsArray;
     }
