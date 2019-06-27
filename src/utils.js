@@ -18,10 +18,13 @@ export class ConverterCSVToTxObject {
         let tx = {};
         tx['nonce'] = nonce + i;
         let row = result.data[i];
-        tx['to'] = row[0];
-        tx['value'] = row[1];
-        tx['from'] = this._publicKey;
-        paramsArray.push(tx)
+        if (row[0]){
+          tx['to'] = row[0];
+          tx['value'] = row[1];
+          tx['from'] = this._publicKey;
+          paramsArray.push(tx)
+        }
+       
       }
       return paramsArray;
     }
