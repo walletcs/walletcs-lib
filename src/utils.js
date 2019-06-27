@@ -1,8 +1,7 @@
 import { ethers } from 'ethers';
 import Papa from 'papaparse';
-import { FileTransactionGenerator } from './walletcs';
 
-export default class ConverterCSVToJSON {
+export default class ConverterCSVToTxObject {
   constructor(file, publicKey, network){
     this._csvFile = file;
     this._publicKey = publicKey;
