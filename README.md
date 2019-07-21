@@ -1,9 +1,11 @@
-### Packet is wrapper for work with blockchain crypto currency. ###
-This package helpful work with walletcs.com applications.
+## Wrapper library for blockchain cryptocurrency and smart contracts ##
+
+This library is used in the walletcs offline and web applications.
+
 walletcs.js:
 
 1. class FileTransactionGenerator
-Class for generate a file with transactions in the json format.
+Class for generating a file with transactions in the json format.
 Example:
 ```javascript
 const tx = {
@@ -24,7 +26,7 @@ let json = file.generateJson();
 ```
 
 2. class FileTransactionReader
-Class for reader and parse json format files with transactions.
+Class for reading and parsing json format files with transactions.
 ```javascript
 let ftr = new FileTransactionReader(JSON.stringify(file));
 ftr.parserFile()
