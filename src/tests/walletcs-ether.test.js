@@ -89,6 +89,7 @@ test('Convert csv to json', async () => {
   let [address2, privateKey2] = EtherKeyPair.generatePair(network);
 
   const rows = [
+    ['address', 'amount'],
     [address, 0.001],
     [address2, 0.0001]
   ];

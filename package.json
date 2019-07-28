@@ -41,7 +41,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@bitbucket.org/exilion/walletcs-lib.git"
+    "url": "https://github.com/walletcs/walletcs-lib"
   },
   "keywords": [
     "walletcs"
@@ -52,5 +52,5 @@
   ],
   "author": "Denys Rozlomii",
   "license": "Apache-2.0",
-  "homepage": "https://bitbucket.org/exilion/walletcs-lib#readme"
+  "homepage": "https://github.com/walletcs/walletcs-lib#readme"
 }

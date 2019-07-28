@@ -591,9 +591,7 @@ test('test check not correct transaction', async () => {
 test('test sign transfer', async () => {
   try {
     const tx = await createTransfer();
-    console.log(tx);
     const signTx = await  EtherTransaction.sign('c304a1266482d6ffefc2d1b67f58a8ff3a0a8c922d96d21cf67ce5ff7278c00e', tx);
-    console.log(signTx);
     expect.stringContaining(signTx)
   } catch(e) {
     console.log(e);
