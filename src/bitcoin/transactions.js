@@ -5,6 +5,7 @@ import axios from 'axios';
 
 const feePeerKb = 71050; // 71050 satoshminSumies 0.43$/kb fee
 const minSum = 540;
+const coficient = Math.pow(10, 8);
 
 const _chooseNetwork = (network) =>
     // Choose between two networks testnet and main
@@ -25,14 +26,13 @@ const _convertToSatoshi = (val) => {
 };
 
 export class TransactionBitcoin {
-  constructor(publicKey, network) {
+  constructor(fromAddresses, network) {
     _chooseNetwork(network);
-    this.urlAddress = `https://api.blockcypher.com/v1/btc/${network}/addrs/${publicKey}?unspentOnly=true`;
-    this.rawTx = {'outxs': [], from: publicKey};
+    this.fromAddresses = fromAddresses.filter((value, index, self) => self.indexOf(value) === index)
   }
 
-  async getUnspentTx() {
-    const response = await axios.get(this.urlAddress);
+  async getUnspentTx(address) {
+    const response = await axios.get(`https://api.blockcypher.com/v1/btc/${network}/addrs/${address}?unspentOnly=true`);
     const unspentTransactions = [];
     if (response.data.unconfirmed_txrefs) {
       for (let i = 0; i < response.data.unconfirmed_txrefs.length; i += 1) {
@@ -61,11 +61,11 @@ export class TransactionBitcoin {
     return [unspentTransactions, response.data.balance];
   }
   // value for convert btc to satoshi.
-  async createTx(amount, to, value, batch) {
+  async createTx(to, amount, satoshi, batch) {
     if (!batch) {
-      return this.createOneTx(amount, to, value)
+      return this.createOneTx(to, amount, satoshi)
     } else {
-      return this.createBatchTx(amount, to, value)
+      return this.createBatchTx(to, amount, satoshi)
     }
   };
 
@@ -98,54 +98,86 @@ export class TransactionBitcoin {
     return this.rawTx;
   }
 
-  async createOneTx(amount, address, value){
-    const [unspentTransactions, balance] = await this.getUnspentTx();
-  
-    if(balance < amount) throw Error('Too low balance.');
-    
-    if(!amount || !address) throw Error('\'amount\' and \'address\' are required arguments');
-    amount = parseFloat(amount);
-    if(!value) amount = amount * Math.pow(10, 8);  // If not value convert btc to satoshi
-    if(amount < minSum) throw new Error('Amount should be more 540 satoshi.');
-  
-    try{
-      
-      let unspent_value = 0;
-      for(let key in unspentTransactions){
-        unspent_value += unspentTransactions[key].value;
+  async createOneTx(toAddresses, amounts, satoshi) {
+    const transactions = {assetUnspentTx: [], assetTo: []};
+    for (let k=0; k < this.fromAddresses; k += 1){
+      const from = this.fromAddresses[k];
+      const transactionInfo = {from, outxs: []};
+      const [unspentTransactions, balance] = await this.getUnspentTx(from);
 
-        this.rawTx.outxs.push({
+      for (let v=0; v < unspentTransactions.length; v=0){
+
+        transactionInfo.outxs.push({
           txId: unspentTransactions[key].tx_hash,
           vout: unspentTransactions[key].tx_output_n,
           value: unspentTransactions[key].value
         });
-
-        if(unspent_value > amount) break;
       }
+      transactions.push(transactionInfo);
 
-      this.rawTx.amount = amount;
-      this.rawTx.to = address;
-      this.rawTx.type = 'single';
+      //
+      // if (!toAddresses.length) {
+      //   let fee = (transactionInfo.outxs.length * 34 + 180 + 10 + 34) * 44; // 34 average size output. 180 average size input and 10 for over. 44 satoshis/byte
+      //   let change = transactionInfo.attempt_spent - amount - fee;
+      //   if (change < 0) throw Error('Error balance for current account.Check you account balance.');
+      //
+      //   if (0 < change && change < minSum) change = 0;
+      //
+      //   transactionInfo.fee = fee;
+      //   if (change !== 0) this.rawTx.change = change;
+      // }
 
-      if (unspent_value === 0) throw Error('Error balance for current account.Check you account balance.');
-      this.rawTx.attempt_spent = unspent_value;
-
-
-      let fee = (this.rawTx.outxs.length*34 + 180 + 10 + 34) * 44; // 34 average size output. 180 average size input and 10 for over. 44 satoshis/byte
-      let change = this.rawTx.attempt_spent - this.rawTx.amount - fee;
-      if (change < 0) throw Error('Error balance for current account.Check you account balance.');
-
-      if (0 < change && change < minSum) change = 0;
-
-      this.rawTx.fee = fee;
-      if(change !== 0) this.rawTx.change = change;
-      return this.rawTx
-
-    }catch (e) {
-      console.error(e);
-
-      return this.rawTx
     }
+    for (let i=0;  i < toAddresses.length; i +=1 ){
+      const amount = amounts[i];
+      const to = toAddresses[i];
+      transactions.assetTo.push({to, amount});
+    }
+    return transactions;
+    // for (let i = 0; i < this.fromAddresses.length; i += 1) {
+    //   const transactionInfo = {outxs: [], from: this.fromAddresses[i]};
+    //   const [unspentTransactions, balance] = await this.getUnspentTx(this.fromAddresses[i]);
+    //
+    //   if (!amount.length || !toAddresses.length) throw Error('\'amount\' and \'address\' are required arguments');
+    //
+    //   for(let i = 0; i < toAddresses.length; i += 1) {
+    //     const amount = parseFloat(amounts[i]);
+    //     if (satoshi) amount = amount * coficient;  // If not satoshi convert btc to satoshi
+    //
+    //     if (amount < satoshi ? minSum : minSum / coficient) throw new Error('Amount should be more 540 satoshi.');
+    //
+    //     let unspent_value = 0;
+    //     for (let key in unspentTransactions) {
+    //       unspent_value += unspentTransactions[key].value;
+    //
+    //       transactionInfo.outxs.push({
+    //         txId: unspentTransactions[key].tx_hash,
+    //         vout: unspentTransactions[key].tx_output_n,
+    //         value: unspentTransactions[key].value
+    //       });
+    //       unspentTransactions.slice(key, 1);
+    //
+    //       if (unspent_value >= amount) break;
+    //     }
+    //     if (!unspentTransactions.length) break;
+    //   }
+    //
+    //   transactionInfo.amount = amount;
+    //   transactionInfo.attempt_spent = unspent_value;
+    //
+    //   if (unspent_value === 0) throw Error('Error balance for current account.Check you account balance.');
+    //
+    //
+    //   let fee = (transactionInfo.outxs.length * 34 + 180 + 10 + 34) * 44; // 34 average size output. 180 average size input and 10 for over. 44 satoshis/byte
+    //   let change = transactionInfo.attempt_spent - amount - fee;
+    //   if (change < 0) throw Error('Error balance for current account.Check you account balance.');
+    //
+    //   if (0 < change && change < minSum) change = 0;
+    //
+    //   transactionInfo.fee = fee;
+    //   if (change !== 0) this.rawTx.change = change;
+    //   return this.rawTx
+    // }
   }
   
   static signSingleTx(network, privateKey, rawTx) {
