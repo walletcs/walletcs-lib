@@ -18,5 +18,6 @@ module.exports = {
   privateKeyIsMainNet: bitcoin.privateKeyIsMainNet,
   representEthTx: transactions.representEthTx,
   representBtcTx: bitcoin.representBtcTx,
-  ConverterCSVToTxObject: utils.ConverterCSVToTxObject
+  ConverterEtherCSVToTxObject: utils.ConverterEtherCSVToTxObject,
+  ConverterBitcoinCSVToTxObject: utils.ConverterBitcoinCSVToTxObject
 };
