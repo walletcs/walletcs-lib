@@ -25,7 +25,7 @@ const _convertToSatoshi = (val) => {
   return parseFloat(val)*Math.pow(10, 8)
 };
 
-export class TransactionBitcoin {
+export class BitcoinTransaction {
   constructor(fromAddresses, network) {
     _chooseNetwork(network);
     this.network = network;
@@ -252,7 +252,7 @@ export class TransactionBitcoin {
    return await axios.post(urlPush, JSON.stringify({tx: rawTx}))
 
   }
-};
+}
 
 export const checkBitcoinAdress = (address) => {
   if (address.length < 26 || address.length > 35) {
@@ -314,4 +314,4 @@ export const representBtcTx = (tx) => {
     newTx.amount = tx.amount / Math.pow(10, 8);
   }
   return newTx;
-}
+};

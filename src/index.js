@@ -1,5 +1,3 @@
-import {ConverterBitcoinCSVToTxObject} from "./utils";
-
 const transactions = require("./ether/transactions");
 const bitcoin = require("./bitcoin/transactions");
 const walletcs = require("./walletcs");
@@ -13,7 +11,7 @@ module.exports = {
   FileTransactionReader: walletcs.FileTransactionReader,
   checkPrivateKey: walletcs.checkPrivateKey,
   checkAddress: walletcs.checkAddress,
-  BitcoinTransaction: bitcoin.TransactionBitcoin,
+  BitcoinTransaction: bitcoin.BitcoinTransaction,
   checkBitcoinAddress: bitcoin.checkBitcoinAdress,
   BitcoinCheckPair: bitcoin.BitcoinCheckPair,
   addressIsMainNet: bitcoin.addressIsMainNet,
