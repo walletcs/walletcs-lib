@@ -2,7 +2,7 @@ import {FileTransactionGenerator, FileTransactionReader} from '../walletcs';
 import {TransactionBitcoin, BitcoinCheckPair} from '../bitcoin/transactions';
 import {ethers} from "ethers";
 import {EtherKeyPair} from "../ether/transactions";
-import { ConverterCSVToTxObject } from '../utils'
+import {ConverterBitcoinCSVToTxObject, ConverterEtherCSVToTxObject} from '../utils'
 
 let privateKey = new ethers.utils.SigningKey('F13BD89E70DFC84BF46743A5824AD2CA485C61D998994048510F758CC47E4D6D');
 const publicKey = '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3';
@@ -83,7 +83,7 @@ test('file bitcoin reader transaction', async () => {
   ftr.parserFile(true)
 });
 
-test('Convert csv to json', async () => {
+test('Convert ether csv to json', async () => {
   let network = 'rinkeby';
   let [address, privateKey] = EtherKeyPair.generatePair(network);
   let [address2, privateKey2] = EtherKeyPair.generatePair(network);
@@ -97,7 +97,7 @@ test('Convert csv to json', async () => {
   let csvContent = ""
       + rows.map(e => e.join(",")).join("\n");
   
-  let parser = new ConverterCSVToTxObject(csvContent, publicKey, network);
+  let parser = new ConverterEtherCSVToTxObject(csvContent, publicKey, network);
   let jsonFile = await parser.convert();
   expect(jsonFile[0].to).toEqual(address);
   expect(jsonFile[1].to).toEqual(address2);
@@ -106,3 +106,29 @@ test('Convert csv to json', async () => {
   expect(jsonFile[0].gasLimit).toEqual(21000);
   expect(jsonFile[1].gasLimit).toEqual(21000);
 }, 10000);
+
+
+test('Convert bitcoin csv to json', async () => {
+    let addressFrom = '0x000000000000000000000000000';
+    let addressTo1 = '0x000000000000000000000000001';
+    let addressTo2 = '0x000000000000000000000000002';
+    let amount1 = 0.001;
+    let amount2 = 0.02;
+
+    const rows = [
+      ['address', 'address_type', 'amount', 'change'],
+      [addressFrom, 'from', null, true],
+      [addressTo1, 'to', amount1, null],
+      [addressTo2, 'to', amount2, null],
+    ];
+
+    let csvContent = ""
+      + rows.map(e => e.join(",")).join("\n");
+    let parser = new ConverterBitcoinCSVToTxObject(csvContent);
+    let jsonFile = await parser.convert();
+    expect(jsonFile.to_addresses[0]).toEqual(addressTo1);
+    expect(jsonFile.to_addresses[1]).toEqual(addressTo2);
+    expect(jsonFile.from_addresses[0]).toEqual(addressFrom);
+    expect(jsonFile.change_address).toEqual(addressFrom);
+  }
+);
