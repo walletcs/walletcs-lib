@@ -61,9 +61,9 @@ export class TransactionBitcoin {
     return [unspentTransactions, response.data.balance];
   }
   // value for convert btc to satoshi.
-  async createTx(to, amount, satoshi, batch) {
+  async createTx(to, amount, changeAddress, fee,  satoshi, batch) {
     if (!batch) {
-      return this.createOneTx(to, amount, satoshi)
+      return this.createOneTx(to, amount, changeAddress, fee, satoshi)
     } else {
       return this.createBatchTx(to, amount, satoshi)
     }
@@ -98,8 +98,8 @@ export class TransactionBitcoin {
     return this.rawTx;
   }
 
-  async createOneTx(toAddresses, amounts, satoshi) {
-    const transactions = {assetUnspentTx: [], assetTo: []};
+  async createOneTx(toAddresses, amounts, changeAddress, fee, satoshi) {
+    const transactions = {assetUnspentTx: [], assetTo: [], changeAddress, fee};
     for (let k=0; k < this.fromAddresses; k += 1){
       const from = this.fromAddresses[k];
       const transactionInfo = {from, outxs: []};

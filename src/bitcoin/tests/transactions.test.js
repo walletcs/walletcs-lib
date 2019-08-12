@@ -6,10 +6,11 @@ let privateKey = '93Fd7g7K2iduaVBnK8RxksxSLyCwiwiJ6r9juTQTckAdYCH3irD';
 
 test('Test create transaction', async() => {
   let bitTx = new TransactionBitcoin([address], network);
-  let rawTx = await bitTx.createTx([address], 1000);
+  let rawTx = await bitTx.createTx([address], 1000, address, 0.02 );
   expect.arrayContaining(rawTx.assetTo);
   expect.arrayContaining(rawTx.assetUnspentTx);
-
+  expect(rawTx.changeAddress).toBe(address);
+  expect(rawTx.fee).toBe(0.02);
 });
 //
 // test('Test sing transaction', async() => {
