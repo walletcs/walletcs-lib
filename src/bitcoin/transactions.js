@@ -28,7 +28,7 @@ const _convertToSatoshi = (val) => {
 export class TransactionBitcoin {
   constructor(fromAddresses, network) {
     _chooseNetwork(network);
-    this.network = network || 'test3';
+    this.network = network;
     this.fromAddresses = fromAddresses.filter((value, index, self) => self.indexOf(value) === index)
   }
 
