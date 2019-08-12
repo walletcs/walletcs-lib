@@ -1,3 +1,5 @@
+import {ConverterBitcoinCSVToTxObject} from "./utils";
+
 const transactions = require("./ether/transactions");
 const bitcoin = require("./bitcoin/transactions");
 const walletcs = require("./walletcs");

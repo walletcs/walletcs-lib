@@ -28,11 +28,12 @@ const _convertToSatoshi = (val) => {
 export class TransactionBitcoin {
   constructor(fromAddresses, network) {
     _chooseNetwork(network);
+    this.network = network || 'test3';
     this.fromAddresses = fromAddresses.filter((value, index, self) => self.indexOf(value) === index)
   }
 
   async getUnspentTx(address) {
-    const response = await axios.get(`https://api.blockcypher.com/v1/btc/${network}/addrs/${address}?unspentOnly=true`);
+    const response = await axios.get(`https://api.blockcypher.com/v1/btc/${this.network}/addrs/${address}?unspentOnly=true`);
     const unspentTransactions = [];
     if (response.data.unconfirmed_txrefs) {
       for (let i = 0; i < response.data.unconfirmed_txrefs.length; i += 1) {
@@ -100,20 +101,18 @@ export class TransactionBitcoin {
 
   async createOneTx(toAddresses, amounts, changeAddress, fee, satoshi) {
     const transactions = {assetUnspentTx: [], assetTo: [], changeAddress, fee};
-    for (let k=0; k < this.fromAddresses; k += 1){
+    for (let k=0; k < this.fromAddresses.length; k += 1){
       const from = this.fromAddresses[k];
       const transactionInfo = {from, outxs: []};
       const [unspentTransactions, balance] = await this.getUnspentTx(from);
-
-      for (let v=0; v < unspentTransactions.length; v=0){
-
+      for (let v=0; v < unspentTransactions.length; v += 1){
         transactionInfo.outxs.push({
-          txId: unspentTransactions[key].tx_hash,
-          vout: unspentTransactions[key].tx_output_n,
-          value: unspentTransactions[key].value
+          txId: unspentTransactions[v].tx_hash,
+          vout: unspentTransactions[v].tx_output_n,
+          value: unspentTransactions[v].value
         });
       }
-      transactions.push(transactionInfo);
+      transactions.assetUnspentTx.push(transactionInfo);
 
       //
       // if (!toAddresses.length) {
