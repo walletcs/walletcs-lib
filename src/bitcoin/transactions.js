@@ -25,11 +25,14 @@ const _convertToSatoshi = (val) => {
   return parseFloat(val)*Math.pow(10, 8)
 };
 
+const filterUniq = (array) => {
+  return array.filter((value, index, self) => self.indexOf(value) === index)
+};
+
 export class BitcoinTransaction {
-  constructor(fromAddresses, network) {
-    _chooseNetwork(network);
+  constructor(network, jsonTransaction) {
     this.network = network;
-    this.fromAddresses = fromAddresses.filter((value, index, self) => self.indexOf(value) === index)
+    this._jsonTransaction = jsonTransaction || {outxs: [], to:[], amounts: [], changeAddress: null, fee: null}  ;
   }
 
   async getUnspentTx(address) {
@@ -40,7 +43,7 @@ export class BitcoinTransaction {
         const item = response.data.unconfirmed_txrefs[i];
         if (!item.double_spend) {
           //if there is unconfirmed transaction but there is my public address here
-          if (item.address === this.rawTx.from) {
+          if (item.address === address) {
             unspentTransactions.push(item);
           }
         }
@@ -62,57 +65,52 @@ export class BitcoinTransaction {
     return [unspentTransactions, response.data.balance];
   }
   // value for convert btc to satoshi.
-  async createTx(to, amount, changeAddress, fee,  satoshi, batch) {
-    if (!batch) {
-      return this.createOneTx(to, amount, changeAddress, fee, satoshi)
-    } else {
-      return this.createBatchTx(to, amount, satoshi)
+  async createTx(from, to, amount, changeAddress, fee, type) {
+    if (type === 'single') {
+      this._createTransaction(from, to, amount, changeAddress, fee, type)
     }
+    return null
   };
 
-
-  async createBatchTx(amount, address) {
-    const [unspentTransactions, balance] = await this.getUnspentTx();
+  _createJsonTransaction(from, to, amount, changeAddress, fee, type) {
+    this._prepareTx(from, to, amount, changeAddress, fee, type).then( (outxs) => {
+      for (let u=0; u < outxs.length; u += 1){
+      let item = outxs[i];
+      let utxo = {
+        'txId': item.tx_hash,
+        'outputIndex': item.tx_output_n,
+        'address': from[i],
+        'satoshis': item.value
+      };
+      this._jsonTransaction.outxs[i].outxs[u].push(utxo);
+    }
     amount = amount.map( val => _convertToSatoshi(val));
-    
+
     const getSum = (total, num) => {
       return total + num;
     };
     if (amount.reduce(getSum) > balance) throw Error('Too low balance.');
-  
+
     if (amount.find( val => val < minSum)) throw new Error('Amount should be more 540 satoshi.');
-  
-    for (let i = 0; i < unspentTransactions.length; i++) {
-      let item = unspentTransactions[i];
-      let utxo = {
-        'txId': item.tx_hash,
-        'outputIndex': item.tx_output_n,
-        'address': this.rawTx.from,
-        'satoshis': item.value
-      };
-      this.rawTx.outxs.push(utxo);
-    }
-    this.rawTx.to = address;
-    this.rawTx.amount = amount;
-    this.rawTx.type = 'batch';
-    
-    return this.rawTx;
+
+    this._jsonTransaction.to = address;
+    this._jsonTransaction.amount = amount;
+    this._jsonTransaction.type = type;
+
+    });
   }
 
-  async createOneTx(toAddresses, amounts, changeAddress, fee, satoshi) {
-    const transactions = {assetUnspentTx: [], assetTo: [], changeAddress, fee};
-    for (let k=0; k < this.fromAddresses.length; k += 1){
-      const from = this.fromAddresses[k];
+  async _prepareOutxs(fromAddresses) {
+    let uniqFromAddresses = filterUniq(fromAddresses);
+    const outxs = [];
+    for (let k=0; k < uniqFromAddresses.length; k += 1){
+      const from = uniqFromAddresses[k];
       const transactionInfo = {from, outxs: []};
       const [unspentTransactions, balance] = await this.getUnspentTx(from);
       for (let v=0; v < unspentTransactions.length; v += 1){
-        transactionInfo.outxs.push({
-          txId: unspentTransactions[v].tx_hash,
-          vout: unspentTransactions[v].tx_output_n,
-          value: unspentTransactions[v].value
-        });
+        transactionInfo.outxs.push(unspentTransactions[v]);
       }
-      transactions.assetUnspentTx.push(transactionInfo);
+      outxs.push(transactionInfo);
 
       //
       // if (!toAddresses.length) {
@@ -127,12 +125,7 @@ export class BitcoinTransaction {
       // }
 
     }
-    for (let i=0;  i < toAddresses.length; i +=1 ){
-      const amount = amounts[i];
-      const to = toAddresses[i];
-      transactions.assetTo.push({to, amount});
-    }
-    return transactions;
+    return outxs;
     // for (let i = 0; i < this.fromAddresses.length; i += 1) {
     //   const transactionInfo = {outxs: [], from: this.fromAddresses[i]};
     //   const [unspentTransactions, balance] = await this.getUnspentTx(this.fromAddresses[i]);
