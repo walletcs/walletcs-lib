@@ -3,8 +3,10 @@ import { TransactionBuilder, ECPair, networks, payments } from 'bitcoinjs-lib';
 import { Script, Transaction, PrivateKey, Address } from 'bitcore-lib';
 import axios from 'axios';
 
-const feePeerKb = 71050; // 71050 satoshminSumies 0.43$/kb fee
+const feePeerKb = 44;
 const minSum = 540;
+const avarageInputSize = 180;
+const avarageOutputSize = 44;
 const coficient = Math.pow(10, 8);
 
 const _chooseNetwork = (network) =>
@@ -32,7 +34,23 @@ const filterUniq = (array) => {
 export class BitcoinTransaction {
   constructor(network, jsonTransaction) {
     this.network = network;
-    this._jsonTransaction = jsonTransaction || {outxs: [], to:[], amounts: [], changeAddress: null, fee: null}  ;
+    this._jsonTransaction = jsonTransaction || {
+      outxs: [],
+      to:[],
+      amounts: [],
+      changeAddress: null,
+      fee: null
+    };
+    this._transaction = null;
+  }
+
+  static calculateMinerFee = (outxs, amounts) => {
+    return (outxs.length * avarageInputSize + amounts.length * avarageOutputSize) * feePeerb;
+  };
+
+  static signRawTransaction(serializedTx, prv) {
+    const tx = Transaction(serializedTx);
+    return tx.sign(prv).serialize()
   }
 
   async getUnspentTx(address) {
@@ -67,35 +85,41 @@ export class BitcoinTransaction {
   // value for convert btc to satoshi.
   async createTx(from, to, amount, changeAddress, fee, type) {
     if (type === 'single') {
-      this._createTransaction(from, to, amount, changeAddress, fee, type)
+      this._createJsonTransaction(from, to, amount, changeAddress, fee, type)
     }
     return null
   };
 
-  _createJsonTransaction(from, to, amount, changeAddress, fee, type) {
-    this._prepareTx(from, to, amount, changeAddress, fee, type).then( (outxs) => {
-      for (let u=0; u < outxs.length; u += 1){
-      let item = outxs[i];
-      let utxo = {
-        'txId': item.tx_hash,
-        'outputIndex': item.tx_output_n,
-        'address': from[i],
-        'satoshis': item.value
+  _createJsonTransaction(fromAddresses, toAddresses, amounts, changeAddress, fee, type) {
+    this._prepareOutxs(fromAddresses).then( (outxs) => {
+      const amountsSatoshi = amounts.map( val => _convertToSatoshi(val));
+      const getSum = (total, num) => {
+        return total + num;
       };
-      this._jsonTransaction.outxs[i].outxs[u].push(utxo);
-    }
-    amount = amount.map( val => _convertToSatoshi(val));
+      const totalAmountSatoshi = amountSatoshi.reduce(getSum);
+      let balance = 0;
+      for (let u=0; u < outxs.length; u += 1){
+        if (balance >= totalAmountSatoshi) break;
+        let item = outxs[i].outxs;
+        let from = outxs[i].from;
+        let utxo = {
+          'txId': item.tx_hash,
+          'outputIndex': item.tx_output_n,
+          'address': from,
+          'satoshis': item.value
+        };
+        balance += item.value;
+        this._jsonTransaction.outxs.push(utxo);
+      }
+      if (totalAmountSatoshi > balance) throw Error('Too low balance.');
 
-    const getSum = (total, num) => {
-      return total + num;
-    };
-    if (amount.reduce(getSum) > balance) throw Error('Too low balance.');
+      if (amountsSatoshi.find( val => val < minSum)) throw new Error('Amount should be more 540 satoshi.');
 
-    if (amount.find( val => val < minSum)) throw new Error('Amount should be more 540 satoshi.');
-
-    this._jsonTransaction.to = address;
-    this._jsonTransaction.amount = amount;
-    this._jsonTransaction.type = type;
+      this._jsonTransaction.changeAddress = changeAddress || null;
+      this._jsonTransaction.fee = fee || this.calculateMinerFee(this._jsonTransaction.outxs, amounts);
+      this._jsonTransaction.to = toAddresses;
+      this._jsonTransaction.amounts = amounts;
+      this._jsonTransaction.type = type;
 
     });
   }
@@ -112,132 +136,56 @@ export class BitcoinTransaction {
       }
       outxs.push(transactionInfo);
 
-      //
-      // if (!toAddresses.length) {
-      //   let fee = (transactionInfo.outxs.length * 34 + 180 + 10 + 34) * 44; // 34 average size output. 180 average size input and 10 for over. 44 satoshis/byte
-      //   let change = transactionInfo.attempt_spent - amount - fee;
-      //   if (change < 0) throw Error('Error balance for current account.Check you account balance.');
-      //
-      //   if (0 < change && change < minSum) change = 0;
-      //
-      //   transactionInfo.fee = fee;
-      //   if (change !== 0) this.rawTx.change = change;
-      // }
-
     }
     return outxs;
-    // for (let i = 0; i < this.fromAddresses.length; i += 1) {
-    //   const transactionInfo = {outxs: [], from: this.fromAddresses[i]};
-    //   const [unspentTransactions, balance] = await this.getUnspentTx(this.fromAddresses[i]);
-    //
-    //   if (!amount.length || !toAddresses.length) throw Error('\'amount\' and \'address\' are required arguments');
-    //
-    //   for(let i = 0; i < toAddresses.length; i += 1) {
-    //     const amount = parseFloat(amounts[i]);
-    //     if (satoshi) amount = amount * coficient;  // If not satoshi convert btc to satoshi
-    //
-    //     if (amount < satoshi ? minSum : minSum / coficient) throw new Error('Amount should be more 540 satoshi.');
-    //
-    //     let unspent_value = 0;
-    //     for (let key in unspentTransactions) {
-    //       unspent_value += unspentTransactions[key].value;
-    //
-    //       transactionInfo.outxs.push({
-    //         txId: unspentTransactions[key].tx_hash,
-    //         vout: unspentTransactions[key].tx_output_n,
-    //         value: unspentTransactions[key].value
-    //       });
-    //       unspentTransactions.slice(key, 1);
-    //
-    //       if (unspent_value >= amount) break;
-    //     }
-    //     if (!unspentTransactions.length) break;
-    //   }
-    //
-    //   transactionInfo.amount = amount;
-    //   transactionInfo.attempt_spent = unspent_value;
-    //
-    //   if (unspent_value === 0) throw Error('Error balance for current account.Check you account balance.');
-    //
-    //
-    //   let fee = (transactionInfo.outxs.length * 34 + 180 + 10 + 34) * 44; // 34 average size output. 180 average size input and 10 for over. 44 satoshis/byte
-    //   let change = transactionInfo.attempt_spent - amount - fee;
-    //   if (change < 0) throw Error('Error balance for current account.Check you account balance.');
-    //
-    //   if (0 < change && change < minSum) change = 0;
-    //
-    //   transactionInfo.fee = fee;
-    //   if (change !== 0) this.rawTx.change = change;
-    //   return this.rawTx
-    // }
   }
   
-  static signSingleTx(network, privateKey, rawTx) {
-    let txBuilder = new TransactionBuilder(network);
-    let _private = ECPair.fromWIF(privateKey, network);
-  
-    // If the response transaction returns 0 outputs
-    if (!rawTx.outxs.length) throw Error('Error balance for current account.Check your transaction');
-  
-    for(let key in rawTx.outxs){
-      txBuilder.addInput(rawTx.outxs[key].txId, rawTx.outxs[key].vout)
-    }
-  
-    txBuilder.addOutput(rawTx.to, rawTx.amount);
-  
-    txBuilder.addOutput(rawTx.from, rawTx.change);
-  
-    for (let i = 0; i < rawTx.outxs.length; i += 1) {
-      txBuilder.sign(i, _private);
-    }
-  
-    return txBuilder.build().toHex()
-  }
-  
-  static signBatchTx(network, privateKey, rawTx) {
-    let script = new Script(Address(rawTx.from)).toHex();
-  
-    let prvKey = new PrivateKey(privateKey);
-  
+  buildTransaction() {
+    if (!this._jsonTransaction.outxs.length) throw Error(
+      'This method can\'t call before the createTransaction method ' +
+      'or if the instance was create without the parameter jsonTransaction.');
     let totalValue = 0;
-  
+
     let transaction = new Transaction();
     
     // Add script to the outx and add to the transaction
-    for (let i = 0; i < rawTx.outxs.length; i++) {
-      let item = rawTx.outxs[i];
-      item.script = script;
+    for (let i = 0; i < this._jsonTransaction.outxs.length; i++) {
+      let item = this._jsonTransaction.outxs[i];
+      item.script = new Script(Address(this._jsonTransaction.outxs[i].address)).toHex();
       totalValue += item.satoshis;
       transaction.from(item)
     }
     
     let totalOutput = 0;
-    for (let i = 0; i < rawTx.to.length; i += 1) {
-      transaction.to(rawTx.to[i], rawTx.amount[i]);
-      totalOutput += rawTx.amount[i];
+    for (let i = 0; i < this._jsonTransaction.to.length; i += 1) {
+      transaction.to(this._jsonTransaction.to[i], this._jsonTransaction.amount[i]);
+      totalOutput +=  this._jsonTransaction.amount[i];
     }
     
-    let fee = Math.floor(feePeerKb * transaction._estimateSize() / 1024);
+    let fee = this._jsonTransaction.fee;
     transaction.fee(fee);
     
     let change = totalValue - totalOutput - fee;
     if (change < 0) throw Error('Error balance for current account.Check you account balance.');
     if (0 < change && change < minSum) change = 0;
-    if (change) transaction.change(rawTx.from);
-  
-    transaction.enableRBF().sign(prvKey);
-    
+    if (change) transaction.change(this._jsonTransaction.changeAddress || this._jsonTransaction.outxs[0].address);
+
     return transaction.serialize();
   }
 
-  static sign(privateKey, rawTx, network){
-    network = _chooseNetwork(network);
-    if (rawTx.type === 'single'){
-      return this.signSingleTx(network, privateKey, rawTx);
-    }
-    if (rawTx.type === 'batch'){
-      return this.signBatchTx(network, privateKey, rawTx);
-    }
+  getJsonTransaction () {
+    return JSON.stringify(this._jsonTransaction);
+  }
+
+  getRawTransaction() {
+    if (!this._transaction) this.buildTransaction();
+    return this._transaction.serialize();
+  }
+
+  sign(privateKeys){
+    if (!this._transaction) throw Error('Transaction wasn\'t created.');
+    const prvs = Array.isArray(privateKeys) ? privateKeys : [privateKeys];
+    this._transaction.sign(prvs.map( key => PrivateKey(key)));
   }
 
   static async broadcastTx(rawTx, network){
