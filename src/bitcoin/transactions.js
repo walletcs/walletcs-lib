@@ -85,43 +85,41 @@ export class BitcoinTransaction {
   // value for convert btc to satoshi.
   async createTx(from, to, amount, changeAddress, fee, type) {
     if (type === 'single') {
-      this._createJsonTransaction(from, to, amount, changeAddress, fee, type)
+      await this._createJsonTransaction(from, to, amount, changeAddress, fee, type)
     }
     return null
   };
 
-  _createJsonTransaction(fromAddresses, toAddresses, amounts, changeAddress, fee, type) {
-    this._prepareOutxs(fromAddresses).then( (outxs) => {
-      const amountsSatoshi = amounts.map( val => _convertToSatoshi(val));
-      const getSum = (total, num) => {
-        return total + num;
+  async _createJsonTransaction(fromAddresses, toAddresses, amounts, changeAddress, fee, type) {
+    const outxs = await this._prepareOutxs(fromAddresses);
+    const amountsSatoshi = amounts.map( val => _convertToSatoshi(val));
+    const getSum = (total, num) => {
+      return total + num;
+    };
+    const totalAmountSatoshi = amountsSatoshi.reduce(getSum);
+    let balance = 0;
+    for (let u=0; u < outxs.length; u += 1){
+      if (balance >= totalAmountSatoshi) break;
+      let item = outxs[u].outxs;
+      let from = outxs[u].from;
+      let utxo = {
+        'txId': item.tx_hash,
+        'outputIndex': item.tx_output_n,
+        'address': from,
+        'satoshis': item.value
       };
-      const totalAmountSatoshi = amountSatoshi.reduce(getSum);
-      let balance = 0;
-      for (let u=0; u < outxs.length; u += 1){
-        if (balance >= totalAmountSatoshi) break;
-        let item = outxs[i].outxs;
-        let from = outxs[i].from;
-        let utxo = {
-          'txId': item.tx_hash,
-          'outputIndex': item.tx_output_n,
-          'address': from,
-          'satoshis': item.value
-        };
-        balance += item.value;
-        this._jsonTransaction.outxs.push(utxo);
-      }
-      if (totalAmountSatoshi > balance) throw Error('Too low balance.');
+      balance += item.value;
+      this._jsonTransaction.outxs.push(utxo);
+    }
+    if (totalAmountSatoshi > balance) throw Error('Too low balance.');
 
-      if (amountsSatoshi.find( val => val < minSum)) throw new Error('Amount should be more 540 satoshi.');
+    if (amountsSatoshi.find( val => val < minSum)) throw new Error('Amount should be more 540 satoshi.');
 
-      this._jsonTransaction.changeAddress = changeAddress || null;
-      this._jsonTransaction.fee = fee || this.calculateMinerFee(this._jsonTransaction.outxs, amounts);
-      this._jsonTransaction.to = toAddresses;
-      this._jsonTransaction.amounts = amounts;
-      this._jsonTransaction.type = type;
-
-    });
+    this._jsonTransaction.changeAddress = changeAddress || null;
+    this._jsonTransaction.fee = fee || this.calculateMinerFee(this._jsonTransaction.outxs, amounts);
+    this._jsonTransaction.to = toAddresses;
+    this._jsonTransaction.amounts = amounts;
+    this._jsonTransaction.type = type;
   }
 
   async _prepareOutxs(fromAddresses) {

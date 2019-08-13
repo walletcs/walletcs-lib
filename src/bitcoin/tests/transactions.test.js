@@ -1,16 +1,19 @@
-import {BitcoinCheckPair, checkBitcoinAdress, TransactionBitcoin} from '../transactions';
+import {
+  BitcoinCheckPair,
+  BitcoinTransaction,
+  checkBitcoinAdress,
+} from '../transactions';
 
 let network = 'test3';
 let address = 'mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X';
 let privateKey = '93Fd7g7K2iduaVBnK8RxksxSLyCwiwiJ6r9juTQTckAdYCH3irD';
 
 test('Test create transaction', async() => {
-  let bitTx = new TransactionBitcoin([address], network);
-  let rawTx = await bitTx.createTx([address], 1000, address, 0.02 );
-  expect.arrayContaining(rawTx.assetTo);
-  expect.arrayContaining(rawTx.assetUnspentTx);
-  expect(rawTx.changeAddress).toBe(address);
-  expect(rawTx.fee).toBe(0.02);
+  let bitTx = new BitcoinTransaction(network);
+  await bitTx.createTx([address], [address, address], [0.0001, 0.00001], address, 0.02, 'single');
+  const rawTx = bitTx.getJsonTransaction();
+  expect(rawTx).toEqual('{"outxs":[{"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"}],"to":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"amounts":[0.0001,0.00001],"changeAddress":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","fee":0.02,"type":"single"}')
+
 });
 //
 // test('Test sing transaction', async() => {
