@@ -1,5 +1,5 @@
-const transactions = require("./ether/transactions");
-const bitcoin = require("./bitcoin/transactions");
+const transactions = require("./ether");
+const bitcoin = require("./bitcoin");
 const walletcs = require("./walletcs");
 const utils = require("./utils");
 

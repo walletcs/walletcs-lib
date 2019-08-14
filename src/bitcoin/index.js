@@ -24,12 +24,16 @@ const _chooseNetwork = (network) =>
 };
 
 const _convertToSatoshi = (val) => {
-  return parseFloat(val)*Math.pow(10, 8)
+  return parseInt(parseFloat(val)*Math.pow(10, 8))
 };
 
 const filterUniq = (array) => {
   return array.filter((value, index, self) => self.indexOf(value) === index)
 };
+
+const calculateMinerFee = (outxs, amounts) => {
+    return (outxs.length * avarageInputSize + amounts.length * avarageOutputSize) * feePeerKb;
+  };
 
 export class BitcoinTransaction {
   constructor(network, jsonTransaction) {
@@ -43,10 +47,6 @@ export class BitcoinTransaction {
     };
     this._transaction = null;
   }
-
-  static calculateMinerFee = (outxs, amounts) => {
-    return (outxs.length * avarageInputSize + amounts.length * avarageOutputSize) * feePeerb;
-  };
 
   static signRawTransaction(serializedTx, prv) {
     const tx = Transaction(serializedTx);
@@ -93,33 +93,38 @@ export class BitcoinTransaction {
   async _createJsonTransaction(fromAddresses, toAddresses, amounts, changeAddress, fee, type) {
     const outxs = await this._prepareOutxs(fromAddresses);
     const amountsSatoshi = amounts.map( val => _convertToSatoshi(val));
-    const getSum = (total, num) => {
-      return total + num;
-    };
+    const getSum = (total, num) => total + num;
     const totalAmountSatoshi = amountsSatoshi.reduce(getSum);
     let balance = 0;
+
     for (let u=0; u < outxs.length; u += 1){
-      if (balance >= totalAmountSatoshi) break;
-      let item = outxs[u].outxs;
-      let from = outxs[u].from;
-      let utxo = {
-        'txId': item.tx_hash,
-        'outputIndex': item.tx_output_n,
-        'address': from,
-        'satoshis': item.value
-      };
-      balance += item.value;
-      this._jsonTransaction.outxs.push(utxo);
+      for (let i=0; i < outxs[u].outxs.length; i += 1){
+        if (balance < totalAmountSatoshi){
+          let item = outxs[u].outxs[i];
+          let from = outxs[u].from;
+          let utxo = {
+            'txId': item.tx_hash,
+            'outputIndex': item.tx_output_n,
+            'address': from,
+            'satoshis': item.value
+          };
+          balance += item.value;
+          this._jsonTransaction.outxs.push(utxo);
+        }
+      }
     }
+
     if (totalAmountSatoshi > balance) throw Error('Too low balance.');
 
     if (amountsSatoshi.find( val => val < minSum)) throw new Error('Amount should be more 540 satoshi.');
 
     this._jsonTransaction.changeAddress = changeAddress || null;
-    this._jsonTransaction.fee = fee || this.calculateMinerFee(this._jsonTransaction.outxs, amounts);
+    this._jsonTransaction.fee = fee ? _convertToSatoshi(fee) : calculateMinerFee(this._jsonTransaction.outxs, amountsSatoshi);
     this._jsonTransaction.to = toAddresses;
-    this._jsonTransaction.amounts = amounts;
+    this._jsonTransaction.amounts = amountsSatoshi;
     this._jsonTransaction.type = type;
+
+    this.buildTransaction()
   }
 
   async _prepareOutxs(fromAddresses) {
@@ -156,19 +161,19 @@ export class BitcoinTransaction {
     
     let totalOutput = 0;
     for (let i = 0; i < this._jsonTransaction.to.length; i += 1) {
-      transaction.to(this._jsonTransaction.to[i], this._jsonTransaction.amount[i]);
-      totalOutput +=  this._jsonTransaction.amount[i];
+      transaction.to(this._jsonTransaction.to[i], this._jsonTransaction.amounts[i]);
+      totalOutput +=  this._jsonTransaction.amounts[i];
     }
     
     let fee = this._jsonTransaction.fee;
     transaction.fee(fee);
     
-    let change = totalValue - totalOutput - fee;
+    let change = parseInt(totalValue - totalOutput - fee);
     if (change < 0) throw Error('Error balance for current account.Check you account balance.');
     if (0 < change && change < minSum) change = 0;
     if (change) transaction.change(this._jsonTransaction.changeAddress || this._jsonTransaction.outxs[0].address);
 
-    return transaction.serialize();
+    this._transaction = transaction
   }
 
   getJsonTransaction () {
@@ -182,8 +187,8 @@ export class BitcoinTransaction {
 
   sign(privateKeys){
     if (!this._transaction) throw Error('Transaction wasn\'t created.');
-    const prvs = Array.isArray(privateKeys) ? privateKeys : [privateKeys];
-    this._transaction.sign(prvs.map( key => PrivateKey(key)));
+    const prvks = Array.isArray(privateKeys) ? privateKeys : [privateKeys];
+    this._transaction.sign(prvks.map( key => new PrivateKey(key)));
   }
 
   static async broadcastTx(rawTx, network){

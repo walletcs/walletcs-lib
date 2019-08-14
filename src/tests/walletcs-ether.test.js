@@ -1,7 +1,7 @@
 import {FileTransactionGenerator, FileTransactionReader} from '../walletcs';
-import {TransactionBitcoin, BitcoinCheckPair} from '../bitcoin/transactions';
+import {TransactionBitcoin, BitcoinCheckPair} from '../bitcoin';
 import {ethers} from "ethers";
-import {EtherKeyPair} from "../ether/transactions";
+import {EtherKeyPair} from "../ether";
 import {ConverterBitcoinCSVToTxObject, ConverterEtherCSVToTxObject} from '../utils'
 
 let privateKey = new ethers.utils.SigningKey('F13BD89E70DFC84BF46743A5824AD2CA485C61D998994048510F758CC47E4D6D');
