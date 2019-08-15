@@ -119,7 +119,7 @@ export class BitcoinTransaction {
     if (amountsSatoshi.find( val => val < minSum)) throw new Error('Amount should be more 540 satoshi.');
 
     this._jsonTransaction.changeAddress = changeAddress || null;
-    this._jsonTransaction.fee = fee ? _convertToSatoshi(fee) : calculateMinerFee(this._jsonTransaction.outxs, amountsSatoshi);
+    this._jsonTransaction.fee = fee;
     this._jsonTransaction.to = toAddresses;
     this._jsonTransaction.amounts = amountsSatoshi;
     this._jsonTransaction.type = type;
@@ -164,15 +164,17 @@ export class BitcoinTransaction {
       transaction.to(this._jsonTransaction.to[i], this._jsonTransaction.amounts[i]);
       totalOutput +=  this._jsonTransaction.amounts[i];
     }
-    
-    let fee = this._jsonTransaction.fee;
-    transaction.fee(fee);
-    
-    let change = parseInt(totalValue - totalOutput - fee);
+
+
+
+    let change = parseInt(totalValue - totalOutput);
     if (change < 0) throw Error('Error balance for current account.Check you account balance.');
     if (0 < change && change < minSum) change = 0;
     if (change) transaction.change(this._jsonTransaction.changeAddress || this._jsonTransaction.outxs[0].address);
 
+    let fee = this._jsonTransaction.fee ? _convertToSatoshi(this._jsonTransaction.fee) : transaction.getFee();
+    this._jsonTransaction.fee = fee;
+    transaction.fee(fee);
     this._transaction = transaction
   }
 
