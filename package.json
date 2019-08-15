@@ -27,7 +27,6 @@
     "bitcore-lib": "^8.3.3",
     "ethers": "^4.0.25",
     "papaparse": "^5.0.0",
-    "walletcs": "^0.1.0",
     "web3": "^0.20.5"
   },
   "resolutions": {
