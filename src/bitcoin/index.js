@@ -31,10 +31,6 @@ const filterUniq = (array) => {
   return array.filter((value, index, self) => self.indexOf(value) === index)
 };
 
-const calculateMinerFee = (outxs, amounts) => {
-    return (outxs.length * avarageInputSize + amounts.length * avarageOutputSize) * feePeerKb;
-  };
-
 export class BitcoinTransaction {
   constructor(network, jsonTransaction) {
     this.network = network;

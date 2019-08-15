@@ -266,5 +266,6 @@ test('Test autocomplete fee', async () => {
     address,
     null,
     'single');
-  expect(bitTx.getFee()).toBeTruthy()
+  console.log(bitTx.getFee());
+  expect(bitTx.getFee()).toEqual(23500)
 });
