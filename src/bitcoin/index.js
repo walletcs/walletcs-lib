@@ -176,6 +176,11 @@ export class BitcoinTransaction {
     this._transaction = transaction
   }
 
+  getFee () {
+    if (!this._transaction) return 0;
+    return this._transaction.getFee()
+  }
+
   getJsonTransaction () {
     return JSON.stringify(this._jsonTransaction);
   }
