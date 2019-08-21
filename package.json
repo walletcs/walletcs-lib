@@ -23,6 +23,8 @@
     "axios": "^0.18.0",
     "babel-polyfill": "^6.26.0",
     "babel-register": "^6.26.0",
+    "bip32": "^2.0.4",
+    "bip39": "^3.0.2",
     "bitcoinjs-lib": "^5.0.1",
     "bitcore-lib": "^8.3.3",
     "ethers": "^4.0.25",

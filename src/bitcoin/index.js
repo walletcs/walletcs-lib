@@ -1,4 +1,6 @@
 import 'babel-polyfill';
+import * as bip39 from 'bip39';
+import * as bip32 from 'bip32';
 import { TransactionBuilder, ECPair, networks, payments } from 'bitcoinjs-lib';
 import { Script, Transaction, PrivateKey, Address } from 'bitcore-lib';
 import axios from 'axios';
@@ -230,6 +232,10 @@ export const privateKeyIsMainNet = (pr) => {
   return false;
 };
 
+function getAddress (node, network) {
+  return payments.p2pkh({ pubkey: node.publicKey, network }).address
+}
+
 export class BitcoinCheckPair {
 
   static generatePair(network){
@@ -253,6 +259,38 @@ export class BitcoinCheckPair {
     let { address } = payments.p2pkh({ pubkey: keyPair.publicKey,  network: _network });
     return address === pubK
   }
+
+  static async fromMnemonic(mnemonic, network) {
+    bip39.validateMnemonic(mnemonic);
+    const seed = await bip39.mnemonicToSeed(mnemonic);
+    const root = bip32.fromSeed(seed);
+    return [root.neutered().toBase58(), root.toBase58()]
+  };
+
+  static generateMnemonic(data) {
+    return bip39.generateMnemonic(data);
+  }
+
+  static generateBIP44Pair(string, network) {
+    const root = bip32.fromSeed(Buffer.from(string || this.generateMnemonic(), 'hex'), network);
+    const child1 = root.derivePath("m/44'/0'/0'/0/0");
+    return [[root.neutered().toBase58(), root.toBase58()],[getAddress(child1, network), child1.toWIF()]]
+  };
+
+  static getAddressFromXprv(xprv, number_address, network) {
+    const root = bip32.fromBase58(xprv);
+
+    const child1b = root.deriveHardened(44)
+      .deriveHardened(0)
+      .deriveHardened(0)
+      .derive(0)
+      .derive(number_address);
+
+    return [getAddress(child1b, network), child1b.toWIF()]
+
+  };
+
+
 }
 
 export const representBtcTx = (tx) => {

@@ -269,3 +269,31 @@ test('Test autocomplete fee', async () => {
   console.log(bitTx.getFee());
   expect(bitTx.getFee()).toEqual(23500)
 });
+
+test('Test create pair keys from mnemonic',  async () => {
+  const addresses = await BitcoinCheckPair.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  expect('xpub661MyMwAqRbcG42Nchfke9KUhfnD4BZKko2XrrPTCXaVmZNS9D7AGHFEEpVMF2ddCiRHxY4DGJVyHDsc69qS2Z8c4YCzKbgSpAcpAtuzGKb').toEqual(addresses[0]);
+  expect('xprv9s21ZrQH143K3ZwuWg8kH1Nk9dwieiqUPa6w4TyqeC3Wtm3HbfnuiUvkPZMx6WcYAMcLphQJnnkautdLoVZmPiXunLdu5jqKPUwK6YDwxb6').toEqual(addresses[1])
+
+});
+
+test('Test generate mnemonic', async () => {
+  const mnemonic = BitcoinCheckPair.generateMnemonic();
+  expect(mnemonic).toBeTruthy()
+});
+
+test('Test generate bip44 pair keys', async () => {
+  const addresses = BitcoinCheckPair.generateBIP44Pair('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
+  expect('xpub661MyMwAqRbcFvTdiAGh38CAce6R11u6aC9BhfSS9X3t8pq1ZVEcihRAwWdpDtNEdG7gGHiPDPZuMEruvSSt2gaJEeyjNeWCvjiEezwVAPZ').toEqual(addresses[0][0]);
+  expect('xprv9s21ZrQH143K3SPAc8jgfzFS4cFvbZBFCyDauH2pbBWuG2Vs1wvNAu6h6F3jsdakvPMbSdzNT6ESxnykGiQXgst5jkD21d2J5FTEiuLrxzn').toEqual(addresses[0][1]);
+  expect('12Tyvr1U8A3ped6zwMEU5M8cx3G38sP5Au').toEqual(addresses[1][0]);
+  expect('KzNzUk9WWnq15sp5HYhapRohohkWy6coqRPGvLsyfQLBA2jhByqG').toEqual(addresses[1][1]);
+});
+
+test('Test get number account from xprv', async () => {
+  const addresses = BitcoinCheckPair.generateBIP44Pair('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
+  const xprv = addresses[0][1];
+  const child1 = BitcoinCheckPair.getAddressFromXprv(xprv, 0);
+
+  expect('12Tyvr1U8A3ped6zwMEU5M8cx3G38sP5Au').toEqual(child1[0])
+});
