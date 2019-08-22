@@ -293,7 +293,7 @@ test('Test generate bip44 pair keys', async () => {
 test('Test get number account from xprv', async () => {
   const addresses = BitcoinCheckPair.generateBIP44Pair('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
   const xprv = addresses[0][1];
-  const child1 = BitcoinCheckPair.getAddressFromXprv(xprv, 0);
+  const child1 = BitcoinCheckPair.getAddressFromXprv(xprv, 0, 0);
 
   expect('12Tyvr1U8A3ped6zwMEU5M8cx3G38sP5Au').toEqual(child1[0])
 });

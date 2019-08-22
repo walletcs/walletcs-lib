@@ -1,6 +1,7 @@
 import Web3 from 'web3';
 import {ethers, utils} from 'ethers';
 import {EtherTransaction, EtherTransactionDecoder, EtherKeyPair, representTx} from '../index';
+import {BitcoinCheckPair} from "../../bitcoin";
 
 const abiInterface = [
     {
@@ -603,4 +604,32 @@ test('test represent tx', async () => {
   let newTx = representTx(tx);
 
   expect(newTx.value).toEqual('1.0');
-})
+});
+
+test('Test create pair keys from mnemonic',  async () => {
+  const addresses = await EtherKeyPair.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+    expect(addresses[0]).toEqual('xpub661MyMwAqRbcG42Nchfke9KUhfnD4BZKko2XrrPTCXaVmZNS9D7AGHFEEpVMF2ddCiRHxY4DGJVyHDsc69qS2Z8c4YCzKbgSpAcpAtuzGKb');
+    expect(addresses[1]).toEqual('xprv9s21ZrQH143K3ZwuWg8kH1Nk9dwieiqUPa6w4TyqeC3Wtm3HbfnuiUvkPZMx6WcYAMcLphQJnnkautdLoVZmPiXunLdu5jqKPUwK6YDwxb6');
+
+});
+
+test('Test generate mnemonic', async () => {
+  const mnemonic = EtherKeyPair.generateMnemonic();
+  expect(mnemonic).toBeTruthy()
+});
+
+test('Test generate bip44 pair keys', async () => {
+  const addresses = EtherKeyPair.generateBIP44Pair('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  expect(addresses[0][0]).toEqual('xpub661MyMwAqRbcG42Nchfke9KUhfnD4BZKko2XrrPTCXaVmZNS9D7AGHFEEpVMF2ddCiRHxY4DGJVyHDsc69qS2Z8c4YCzKbgSpAcpAtuzGKb');
+  expect(addresses[0][1]).toEqual('xprv9s21ZrQH143K3ZwuWg8kH1Nk9dwieiqUPa6w4TyqeC3Wtm3HbfnuiUvkPZMx6WcYAMcLphQJnnkautdLoVZmPiXunLdu5jqKPUwK6YDwxb6');
+  expect(addresses[1][0]).toEqual('0x03b25348331d83bc353efcc8ff2a9a9454f6923d7ff8aecd199957167c8a25feb8');
+  expect(addresses[1][1]).toEqual('0x2025be8a6dd7ca618a308eb4f30072b4714e100d582397905b72ae4c0bad40da');
+});
+
+test('Test get number account from xprv', async () => {
+  const addresses = EtherKeyPair.generateBIP44Pair('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses[0][1];
+  const child1 = EtherKeyPair.getAddressFromXprv(xprv, 0, 0);
+
+  expect(child1[0]).toEqual('0x03b25348331d83bc353efcc8ff2a9a9454f6923d7ff8aecd199957167c8a25feb8')
+});

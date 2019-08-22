@@ -5,6 +5,8 @@ import 'babel-polyfill';
 import {ethers, utils, Wallet} from 'ethers';
 import { abi } from 'web3';
 import { addABI, decodeMethod} from 'abi-decoder';
+import * as bip39 from "bip39";
+import * as bip32 from "bip32";
 
 'use strict';
 
@@ -165,6 +167,30 @@ export class EtherKeyPair {
   static checkPair(pubK, privateK){
     return pubK === EtherKeyPair.recoveryPublicKey(privateK)
   }
+
+  static fromMnemonic (mnemonic) {
+    ethers.utils.HDNode.isValidMnemonic(mnemonic);
+    const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
+    return [node.neuter().extendedKey, node.extendedKey]
+  }
+
+  static generateMnemonic() {
+    return ethers.utils.HDNode.entropyToMnemonic(ethers.utils.randomBytes(16))
+  }
+
+  static generateBIP44Pair(string, network) {
+    const root = ethers.utils.HDNode.fromMnemonic(string || this.generateMnemonic());
+    const standardEthereum = root.derivePath(`m/44'/60'/0'/0/0`);
+    return [[root.neuter().extendedKey ,root.extendedKey], [standardEthereum.publicKey, standardEthereum.privateKey]]
+  };
+
+   static getAddressFromXprv(xprv, account, number_address, network) {
+    const root = ethers.utils.HDNode.fromExtendedKey(xprv);
+    const standardEthereum = root.derivePath(`m/44'/60'/${account || 0}'/0/${number_address}`);
+    return [standardEthereum.publicKey, standardEthereum.privateKey]
+
+  };
+
 }
 
 export const representEthTx = (tx) => {

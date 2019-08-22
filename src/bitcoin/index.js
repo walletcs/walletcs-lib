@@ -277,12 +277,12 @@ export class BitcoinCheckPair {
     return [[root.neutered().toBase58(), root.toBase58()],[getAddress(child1, network), child1.toWIF()]]
   };
 
-  static getAddressFromXprv(xprv, number_address, network) {
+  static getAddressFromXprv(xprv, account, number_address, network) {
     const root = bip32.fromBase58(xprv);
 
     const child1b = root.deriveHardened(44)
       .deriveHardened(0)
-      .deriveHardened(0)
+      .deriveHardened(account || 0)
       .derive(0)
       .derive(number_address);
 
