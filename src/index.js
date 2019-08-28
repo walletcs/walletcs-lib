@@ -13,7 +13,7 @@ module.exports = {
   checkAddress: walletcs.checkAddress,
   BitcoinTransaction: bitcoin.BitcoinTransaction,
   checkBitcoinAddress: bitcoin.checkBitcoinAdress,
-  BitcoinCheckPair: bitcoin.BitcoinCheckPair,
+  BitcoinCheckPair: bitcoin.BitcoinWallet,
   addressIsMainNet: bitcoin.addressIsMainNet,
   privateKeyIsMainNet: bitcoin.privateKeyIsMainNet,
   representEthTx: transactions.representEthTx,

@@ -1,5 +1,5 @@
 import {
-  BitcoinCheckPair,
+  BitcoinWallet,
   BitcoinTransaction,
   checkBitcoinAdress,
 } from '../index.js';
@@ -204,22 +204,22 @@ test('Test check address bitcoin', async () => {
 });
 
 test('Test generate pair name', async () => {
-  let [address, key] = BitcoinCheckPair.generatePair('test3');
+  let [address, key] = BitcoinWallet.generatePair('test3');
   expect(checkBitcoinAdress(address)).toBeTruthy();
   expect.stringContaining(key)
 });
 
 test('Test recovery public key', async () => {
-  let [address, key] = BitcoinCheckPair.generatePair('test3');
-  let recovered_address = BitcoinCheckPair.recoveryPublicKey(key, 'test3');
+  let [address, key] = BitcoinWallet.generatePair('test3');
+  let recovered_address = BitcoinWallet.recoveryPublicKey(key, 'test3');
 
   expect(address).toEqual(recovered_address);
 });
 
 test('Test check address', async () => {
-  let [address, key] = BitcoinCheckPair.generatePair('test3');
+  let [address, key] = BitcoinWallet.generatePair('test3');
 
-  expect(BitcoinCheckPair.checkPair(address, key, network)).toBeTruthy()
+  expect(BitcoinWallet.checkPair(address, key, network)).toBeTruthy()
 });
 
 test('Test convert to satoshi', async () => {
@@ -271,29 +271,42 @@ test('Test autocomplete fee', async () => {
 });
 
 test('Test create pair keys from mnemonic',  async () => {
-  const addresses = await BitcoinCheckPair.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
-  expect('xpub661MyMwAqRbcG42Nchfke9KUhfnD4BZKko2XrrPTCXaVmZNS9D7AGHFEEpVMF2ddCiRHxY4DGJVyHDsc69qS2Z8c4YCzKbgSpAcpAtuzGKb').toEqual(addresses[0]);
-  expect('xprv9s21ZrQH143K3ZwuWg8kH1Nk9dwieiqUPa6w4TyqeC3Wtm3HbfnuiUvkPZMx6WcYAMcLphQJnnkautdLoVZmPiXunLdu5jqKPUwK6YDwxb6').toEqual(addresses[1])
+  const addresses = await BitcoinWallet.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor', network);
+  expect('tpubD6NzVbkrYhZ4XrDE4teqr4er2nss3a4PJRcqDQSbYSLPWr39DRxFQiv4Ura8mXarzcxCa7a5oQL1yQNDV1gfuzau88xJ18LgQ8DDvzYk8kY').toEqual(addresses[0]);
+  expect('tprv8ZgxMBicQKsPePBSBEzFSezjTmMvtEsUj823vtQJ8AXzgMnNb38fEEJCJjXc6szrXo97po24x9LPNkB5vhuiCmoWJyrCk6ZNJagjYBAonGS').toEqual(addresses[1])
 
 });
 
 test('Test generate mnemonic', async () => {
-  const mnemonic = BitcoinCheckPair.generateMnemonic();
+  const mnemonic = BitcoinWallet.generateMnemonic();
   expect(mnemonic).toBeTruthy()
 });
 
-test('Test generate bip44 pair keys', async () => {
-  const addresses = BitcoinCheckPair.generateBIP44Pair('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
-  expect('xpub661MyMwAqRbcFvTdiAGh38CAce6R11u6aC9BhfSS9X3t8pq1ZVEcihRAwWdpDtNEdG7gGHiPDPZuMEruvSSt2gaJEeyjNeWCvjiEezwVAPZ').toEqual(addresses[0][0]);
-  expect('xprv9s21ZrQH143K3SPAc8jgfzFS4cFvbZBFCyDauH2pbBWuG2Vs1wvNAu6h6F3jsdakvPMbSdzNT6ESxnykGiQXgst5jkD21d2J5FTEiuLrxzn').toEqual(addresses[0][1]);
-  expect('12Tyvr1U8A3ped6zwMEU5M8cx3G38sP5Au').toEqual(addresses[1][0]);
-  expect('KzNzUk9WWnq15sp5HYhapRohohkWy6coqRPGvLsyfQLBA2jhByqG').toEqual(addresses[1][1]);
+test( 'Validate mnemonic', async () => {
+  const mnemonic = BitcoinWallet.generateMnemonic();
+  expect(BitcoinWallet.validateMnemonic(mnemonic)).toBeTruthy()
+});
+
+test('Get address from xpub', async() => {
+   const addresses = await BitcoinWallet.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor', network);
+   const xpub = addresses[0];
+   const address = BitcoinWallet.getAddressFromXpub(xpub, 0, network);
+   expect('mxztRthVNEED7372vRhEQWuZ16A1qMQriZ').toEqual(address);
+
 });
 
 test('Test get number account from xprv', async () => {
-  const addresses = BitcoinCheckPair.generateBIP44Pair('dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
-  const xprv = addresses[0][1];
-  const child1 = BitcoinCheckPair.getAddressFromXprv(xprv, 0, 0);
+  const addresses = await BitcoinWallet.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor', network);
+  const xprv = addresses[1];
+  const child1 = BitcoinWallet.getAddressWithPrivateFromXprv(xprv, 0, network);
 
-  expect('12Tyvr1U8A3ped6zwMEU5M8cx3G38sP5Au').toEqual(child1[0])
+  expect('mxztRthVNEED7372vRhEQWuZ16A1qMQriZ').toEqual(child1[0]);
+});
+
+test( 'Test get xpub from xprv', async () => {
+  const addresses = await BitcoinWallet.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor', network);
+  const xprv = addresses[1];
+  const recovered = BitcoinWallet.getxPubFromXprv(xprv, network);
+
+  expect(recovered).toEqual(addresses[0]);
 });

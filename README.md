@@ -5,6 +5,6 @@ Bitcoin use examples:
 https://github.com/walletcs/walletcs-lib/blob/master/src/bitcoin/tests/index.test.js
 
 Ethereum use examples:
-https://github.com/walletcs/walletcs-lib/blob/master/src/ether/tests/transactions.test.js
+https://github.com/walletcs/walletcs-lib/blob/master/src/ether/tests/index.test.js
 
 

@@ -1,5 +1,5 @@
 import {FileTransactionGenerator, FileTransactionReader} from '../walletcs';
-import {TransactionBitcoin, BitcoinCheckPair} from '../bitcoin';
+import {TransactionBitcoin, BitcoinWallet} from '../bitcoin';
 import {ethers} from "ethers";
 import {EtherKeyPair} from "../ether";
 import {ConverterBitcoinCSVToTxObject, ConverterEtherCSVToTxObject} from '../utils'
@@ -65,7 +65,7 @@ test('file reader transaction', async () => {
 
 test('file bitcoin reader transaction', async () => {
   let network = 'test3';
-  let [address, privateKey] = BitcoinCheckPair.generatePair(network) ;
+  let [address, privateKey] = BitcoinWallet.generatePair(network) ;
   const file = {"pub_key":address,"transactions":[{
     "contract":null,
       "transaction":{

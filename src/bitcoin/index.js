@@ -1,7 +1,7 @@
 import 'babel-polyfill';
 import * as bip39 from 'bip39';
 import * as bip32 from 'bip32';
-import { TransactionBuilder, ECPair, networks, payments } from 'bitcoinjs-lib';
+import { ECPair, networks, payments } from 'bitcoinjs-lib';
 import { Script, Transaction, PrivateKey, Address } from 'bitcore-lib';
 import axios from 'axios';
 
@@ -236,8 +236,7 @@ function getAddress (node, network) {
   return payments.p2pkh({ pubkey: node.publicKey, network }).address
 }
 
-// TODO: rename to Bitcoin Wallet
-export class BitcoinCheckPair {
+export class BitcoinWallet {
 
   static generatePair(network){
     let _network = _chooseNetwork(network);
@@ -261,41 +260,47 @@ export class BitcoinCheckPair {
     return address === pubK
   }
 
-  static async fromMnemonic(mnemonic, network) { // TODO: remove network, // TODO: return error if mnemonic invalid
-    bip39.validateMnemonic(mnemonic);
+  static async fromMnemonic(mnemonic, network) {
+    if (!bip39.validateMnemonic(mnemonic)) throw Error('Not valid mnemonic.');
     const seed = await bip39.mnemonicToSeed(mnemonic);
-    const root = bip32.fromSeed(seed);
+    const root = bip32.fromSeed(seed, _chooseNetwork(network));
     return [root.neutered().toBase58(), root.toBase58()] // xPub, xPriv
   };
     
-// TODO: what is data
-  static generateMnemonic(data) {
-    return bip39.generateMnemonic(data);
+  static generateMnemonic() {
+    return bip39.generateMnemonic();
+  }
+
+  static validateMnemonic(mnemonic){
+    return bip39.validateMnemonic(mnemonic);
   }
     
-// TODO: Remove this method
-  static generateBIP44Pair(string, network) {
-    const root = bip32.fromSeed(Buffer.from(string || this.generateMnemonic(), 'hex'), network);
-    const child1 = root.derivePath("m/44'/0'/0'/0/0");
-    return [[root.neutered().toBase58(), root.toBase58()],[getAddress(child1, network), child1.toWIF()]]
-  };
-
- // TODO: Add method to validate mnemonic
-    
- // TODO: Add/replace method below to generate n first addresses from xPub.  
-  static getAddressFromXprv(xprv, account, number_address, network) {
-    const root = bip32.fromBase58(xprv);
-
-    const child1b = root.deriveHardened(44)
-      .deriveHardened(0)
-      .deriveHardened(account || 0)
+  static getAddressWithPrivateFromXprv(xprv, number_address, network) {
+    const root = bip32.fromBase58(xprv, _chooseNetwork(network));
+    const child1b = root
       .derive(0)
       .derive(number_address);
 
-    return [getAddress(child1b, network), child1b.toWIF()]
+    return [getAddress(child1b, _chooseNetwork(network)), child1b.toWIF()]
 
   };
-// TODO: add method to generate xPub from xPriv
+
+  static getAddressFromXpub(xpub, number_address, network) {
+    const _network = _chooseNetwork(network);
+    const address = payments.p2pkh({
+      pubkey: bip32.fromBase58(xpub, _network).derive(0).derive(number_address).publicKey,
+      network: _network
+    }).address;
+
+    return address
+
+  };
+
+  static getxPubFromXprv(xprv, network) {
+    const node = bip32.fromBase58(xprv, _chooseNetwork(network));
+
+    return node.neutered().toBase58();
+  }
 
 }
 
