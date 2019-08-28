@@ -236,6 +236,7 @@ function getAddress (node, network) {
   return payments.p2pkh({ pubkey: node.publicKey, network }).address
 }
 
+// TODO: rename to Bitcoin Wallet
 export class BitcoinCheckPair {
 
   static generatePair(network){
@@ -260,23 +261,28 @@ export class BitcoinCheckPair {
     return address === pubK
   }
 
-  static async fromMnemonic(mnemonic, network) {
+  static async fromMnemonic(mnemonic, network) { // TODO: remove network, // TODO: return error if mnemonic invalid
     bip39.validateMnemonic(mnemonic);
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const root = bip32.fromSeed(seed);
-    return [root.neutered().toBase58(), root.toBase58()]
+    return [root.neutered().toBase58(), root.toBase58()] // xPub, xPriv
   };
-
+    
+// TODO: what is data
   static generateMnemonic(data) {
     return bip39.generateMnemonic(data);
   }
-
+    
+// TODO: Remove this method
   static generateBIP44Pair(string, network) {
     const root = bip32.fromSeed(Buffer.from(string || this.generateMnemonic(), 'hex'), network);
     const child1 = root.derivePath("m/44'/0'/0'/0/0");
     return [[root.neutered().toBase58(), root.toBase58()],[getAddress(child1, network), child1.toWIF()]]
   };
 
+ // TODO: Add method to validate mnemonic
+    
+ // TODO: Add/replace method below to generate n first addresses from xPub.  
   static getAddressFromXprv(xprv, account, number_address, network) {
     const root = bip32.fromBase58(xprv);
 
@@ -289,7 +295,7 @@ export class BitcoinCheckPair {
     return [getAddress(child1b, network), child1b.toWIF()]
 
   };
-
+// TODO: add method to generate xPub from xPriv
 
 }
 
