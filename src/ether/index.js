@@ -171,7 +171,7 @@ export class EtherWallet {
   static fromMnemonic (mnemonic) {
     ethers.utils.HDNode.isValidMnemonic(mnemonic);
     const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
-    return [node.neuter().extendedKey, node.extendedKey]
+    return [node.neuter().extendedKey, node.extendedKey] // returns xPub xPrv
   }
 
   static generateMnemonic() {
