@@ -1,6 +1,6 @@
 import Web3 from 'web3';
 import {ethers, utils} from 'ethers';
-import {EtherTransaction, EtherTransactionDecoder, EtherKeyPair, representTx} from '../index';
+import {EtherTransaction, EtherTransactionDecoder, EtherWallet, representEthTx} from '../index';
 
 const abiInterface = [
     {
@@ -517,28 +517,16 @@ async function createTokenTx(){
 }
 
 async function createTransfer(){
-  let accounsts = await provider.listAccounts();
-  let amount = 1;
-  let to = accounsts[1];
-
-  // const tx = {
-  //   to: '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3',
-  //   gasLimit: 21000,
-  //   value: utils.parseEther('1'),
-  //   nonce: await wallet.getTransactionCount(),
-  //   gasPrice: ethers.utils.bigNumberify("20000000000"),
-  //   data: '0x'
-  // };
-  const tx = {"gasLimit":21000,"gasPrice": {"_hex":"0x3b9aca00"},"nonce":33,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value": {"_hex":"0x0de0b6b3a7640000"},"data":"0x"};
-  return tx
+  return  {"gasLimit":21000,"gasPrice": {"_hex":"0x3b9aca00"},"nonce":33,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value": {"_hex":"0x0de0b6b3a7640000"},"data":"0x"};
 }
 
 test('test restore data form ethereum tx', async () => {
   let tx = await createTx();
   rawTx = await wallet.sign(tx);
   let txConvert = new EtherTransactionDecoder(rawTx);
-  let rawTx = txConvert.decodeTx();
-  expect(rawTx.value).toEqual(ethers.utils.parseEther("1.0"));
+  txConvert.decode();
+  let rawTx = txConvert.getTransaction();
+  expect(rawTx.value).toEqual("1.0");
   expect(rawTx.gasLimit).toEqual(21000);
   expect(rawTx.data).toEqual('0x');
 });
@@ -547,36 +535,36 @@ test('test restore data from token tx', async () => {
   let tx = await createTokenTx();
   let txConvert = new EtherTransactionDecoder(tx);
   txConvert.addABI(abiInterface);
-  let rawTx = txConvert.decodeTx();
-  expect(rawTx.value).toEqual(ethers.utils.bigNumberify("0x00"));
+  txConvert.decode();
+  const rawTx = txConvert.getTransaction();
+  expect(rawTx.value).toEqual("0.0");
   expect(rawTx.gasLimit).toEqual(21000);
   expect(rawTx.data['name']).toEqual('transfer')
 });
 
 test('test create pair keys', async () => {
-  let keysPair = EtherKeyPair.generatePair();
-  expect(keysPair.privateKey).not.toBeUndefined();
-  expect(keysPair.address).not.toBeUndefined();
+  let keysPair = EtherWallet.generatePair();
+  expect(keysPair[0]).not.toBeUndefined();
+  expect(keysPair[0]).not.toBeUndefined();
 });
 
 test('test check private key and public key', async () =>{
-  let keysPair = EtherKeyPair.generatePair();
-  let keysPair2 = EtherKeyPair.generatePair();
+  let keysPair = EtherWallet.generatePair();
+  let keysPair2 = EtherWallet.generatePair();
 
-  expect(EtherKeyPair.checkPair(keysPair.address, keysPair.privateKey)).toBeTruthy();
-  expect(EtherKeyPair.checkPair(keysPair.address, keysPair2.privateKey)).toBeFalsy();
+  expect(EtherWallet.checkPair(keysPair[0], keysPair[1])).toBeTruthy();
+  expect(EtherWallet.checkPair(keysPair[0], keysPair2[1])).toBeFalsy();
 });
 
 test('test recover public key', async () => {
-  let keysPair = EtherKeyPair.generatePair();
-  let recovered = EtherKeyPair.recoveryPublicKey(keysPair.privateKey);
+  let keysPair = EtherWallet.generatePair();
+  let recovered = EtherWallet.recoveryPublicKey(keysPair[1]);
 
-  expect(keysPair.address).toEqual(recovered)
+  expect(keysPair[0]).toEqual(recovered)
 });
 
 test('test check correct transaction', async () => {
   let tx = await createTx();
-
   expect(EtherTransaction.checkCorrectTx(tx)).toBeTruthy();
 });
 
@@ -600,35 +588,40 @@ test('test sign transfer', async () => {
 
 test('test represent tx', async () => {
   let tx = await createTransfer();
-  let newTx = representTx(tx);
+  let newTx = representEthTx(tx);
 
   expect(newTx.value).toEqual('1.0');
 });
 
 test('Test create pair keys from mnemonic',  async () => {
-  const addresses = await EtherKeyPair.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const addresses = await EtherWallet.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
     expect(addresses[0]).toEqual('xpub661MyMwAqRbcG42Nchfke9KUhfnD4BZKko2XrrPTCXaVmZNS9D7AGHFEEpVMF2ddCiRHxY4DGJVyHDsc69qS2Z8c4YCzKbgSpAcpAtuzGKb');
     expect(addresses[1]).toEqual('xprv9s21ZrQH143K3ZwuWg8kH1Nk9dwieiqUPa6w4TyqeC3Wtm3HbfnuiUvkPZMx6WcYAMcLphQJnnkautdLoVZmPiXunLdu5jqKPUwK6YDwxb6');
 
 });
 
 test('Test generate mnemonic', async () => {
-  const mnemonic = EtherKeyPair.generateMnemonic();
+  const mnemonic = EtherWallet.generateMnemonic();
   expect(mnemonic).toBeTruthy()
 });
 
-test('Test generate bip44 pair keys', async () => {
-  const addresses = EtherKeyPair.generateBIP44Pair('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
-  expect(addresses[0][0]).toEqual('xpub661MyMwAqRbcG42Nchfke9KUhfnD4BZKko2XrrPTCXaVmZNS9D7AGHFEEpVMF2ddCiRHxY4DGJVyHDsc69qS2Z8c4YCzKbgSpAcpAtuzGKb');
-  expect(addresses[0][1]).toEqual('xprv9s21ZrQH143K3ZwuWg8kH1Nk9dwieiqUPa6w4TyqeC3Wtm3HbfnuiUvkPZMx6WcYAMcLphQJnnkautdLoVZmPiXunLdu5jqKPUwK6YDwxb6');
-  expect(addresses[1][0]).toEqual('0x03b25348331d83bc353efcc8ff2a9a9454f6923d7ff8aecd199957167c8a25feb8');
-  expect(addresses[1][1]).toEqual('0x2025be8a6dd7ca618a308eb4f30072b4714e100d582397905b72ae4c0bad40da');
+test('Test validation mnemonic', async () => {
+  const mnemonic = EtherWallet.generateMnemonic();
+  expect(EtherWallet.validateMnemonic(mnemonic)).toBeTruthy()
+});
+
+test('Test get number account from xpub', async () => {
+  const addresses = await EtherWallet.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xpub = addresses[0];
+  const address = EtherWallet.getAddressFromXpub(xpub);
+  expect(address).toEqual('0x343E60ACea58388fCba2C21F302312feCf55175A')
 });
 
 test('Test get number account from xprv', async () => {
-  const addresses = EtherKeyPair.generateBIP44Pair('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
-  const xprv = addresses[0][1];
-  const child1 = EtherKeyPair.getAddressFromXprv(xprv, 0, 0);
+  const addresses = await EtherWallet.fromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses[1];
+  const child1 = EtherWallet.getAddressWithPrivateFromXprv(xprv, 0);
 
-  expect(child1[0]).toEqual('0x03b25348331d83bc353efcc8ff2a9a9454f6923d7ff8aecd199957167c8a25feb8')
+  expect(child1[0]).toEqual('0x343E60ACea58388fCba2C21F302312feCf55175A')
+  expect(child1[1]).toEqual('0x51778a8e47592afeaa55ca845cf27a4a8f996f9590d2694eac9b9fb2b5efd40a')
 });

@@ -34,7 +34,7 @@ export class EtherTransactionDecoder {
     return this.result
   }
 
-  static addABI(abi){
+  addABI(abi){
     addABI(abi)
   }
   decode() {
@@ -151,7 +151,7 @@ export class EtherTransaction{
   }
 }
 
-export class EtherKeyPair {
+export class EtherWallet {
   // Create and manipulate with private and public key
   static generatePair(){
     let _wallet = Wallet.createRandom();
@@ -165,7 +165,7 @@ export class EtherKeyPair {
   }
 
   static checkPair(pubK, privateK){
-    return pubK === EtherKeyPair.recoveryPublicKey(privateK)
+    return pubK === EtherWallet.recoveryPublicKey(privateK)
   }
 
   static fromMnemonic (mnemonic) {
@@ -178,19 +178,21 @@ export class EtherKeyPair {
     return ethers.utils.HDNode.entropyToMnemonic(ethers.utils.randomBytes(16))
   }
 
-  static generateBIP44Pair(string, network) {
-    const root = ethers.utils.HDNode.fromMnemonic(string || this.generateMnemonic());
-    const standardEthereum = root.derivePath(`m/44'/60'/0'/0/0`);
-    return [[root.neuter().extendedKey ,root.extendedKey], [standardEthereum.publicKey, standardEthereum.privateKey]]
-  };
+  static validateMnemonic(mnemonic) {
+    return ethers.utils.HDNode.isValidMnemonic(mnemonic);
+  }
 
-   static getAddressFromXprv(xprv, account, number_address, network) {
+  static getAddressWithPrivateFromXprv(xprv, number_address) {
     const root = ethers.utils.HDNode.fromExtendedKey(xprv);
-    const standardEthereum = root.derivePath(`m/44'/60'/${account || 0}'/0/${number_address}`);
-    return [standardEthereum.publicKey, standardEthereum.privateKey]
-
+    const standardEthereum = root.derivePath(`0/${number_address || 0}`);
+    return [standardEthereum.address, standardEthereum.privateKey]
   };
 
+  static getAddressFromXpub(xpub, number_address) {
+    const root = ethers.utils.HDNode.fromExtendedKey(xpub);
+    const standardEthereum = root.derivePath(`0/${number_address || 0}`);
+    return standardEthereum.address
+  }
 }
 
 export const representEthTx = (tx) => {
@@ -199,4 +201,4 @@ export const representEthTx = (tx) => {
     newTx.value = utils.formatEther(tx.value);
   }
   return newTx;
-}
+};

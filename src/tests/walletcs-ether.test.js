@@ -1,7 +1,7 @@
 import {FileTransactionGenerator, FileTransactionReader} from '../walletcs';
 import {TransactionBitcoin, BitcoinWallet} from '../bitcoin';
 import {ethers} from "ethers";
-import {EtherKeyPair} from "../ether";
+import {EtherWallet} from "../ether";
 import {ConverterBitcoinCSVToTxObject, ConverterEtherCSVToTxObject} from '../utils'
 
 let privateKey = new ethers.utils.SigningKey('F13BD89E70DFC84BF46743A5824AD2CA485C61D998994048510F758CC47E4D6D');
@@ -85,8 +85,8 @@ test('file bitcoin reader transaction', async () => {
 
 test('Convert ether csv to json', async () => {
   let network = 'rinkeby';
-  let [address, privateKey] = EtherKeyPair.generatePair(network);
-  let [address2, privateKey2] = EtherKeyPair.generatePair(network);
+  let [address, privateKey] = EtherWallet.generatePair(network);
+  let [address2, privateKey2] = EtherWallet.generatePair(network);
 
   const rows = [
     ['address', 'amount'],

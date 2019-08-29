@@ -4,7 +4,7 @@ const walletcs = require("./walletcs");
 const utils = require("./utils");
 
 module.exports = {
-  EtherKeyPair: transactions.EtherKeyPair,
+  EtherKeyPair: transactions.EtherWallet,
   EtherTransaction: transactions.EtherTransaction,
   EtherTransactionDecoder: transactions.EtherTransactionDecoder,
   FileTransactionGenerator: walletcs.FileTransactionGenerator,
