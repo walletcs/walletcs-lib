@@ -28,6 +28,7 @@
     "bitcoinjs-lib": "^5.0.1",
     "bitcore-lib": "^8.3.3",
     "ethers": "^4.0.25",
+    "extends-classes": "^1.0.5",
     "papaparse": "^5.0.0",
     "web3": "^1.0.0"
   },
