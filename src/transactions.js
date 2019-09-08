@@ -1,6 +1,21 @@
 require('babel-polyfill');
 const transactions = require('./base/transactions');
+const structures = require('./base/structures');
+const _ = require('lodash');
 const ethers = require('ethers');
+const bitcoincore = require('bitcore-lib');
+
+function convetOutxToInput(outx) {
+  const input = JSON.parse(JSON.stringify(structures.BitcoinInput));
+  input.address = outx.address;
+  input.txId = outx.txId;
+  input.satoshi = outx.satoshi;
+  input.outputIndex = outx.outputIndex;
+  input.script = new bitcoincore.Script(outx.address).toHex();
+
+  return input;
+}
+
 
 class EtherTx extends transactions.EtherUnsignedTxInterface {
   constructor() {
@@ -75,8 +90,9 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
 }
 
 class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
-  constructor(){
-    super();
+  constructor(network){
+    super(network);
+    this.provider = ethers.getDefaultProvider(this.network);
     this.transaction = new EtherTx()
   }
 
@@ -97,15 +113,66 @@ class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
   }
 
   calculateGasPrice() {
+    this.provider.getGasPrice().then(function (gasPrice) {
+      this.transaction.gasPrice = gasPrice;
+    })
+  }
+
+  calculateGasLimit() {
+    this.provider.estimateGas(this.transaction).then(function (gasLimit) {
+      this.tranasction.gasLimit = gasLimit
+    })
   }
 
   getResult() {
+    return this.transaction;
+  }
 
+}
+
+class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
+  constructor(network){
+    super(network);
+    this.transaction = new BitcoinTx();
+  }
+
+  setFromAddress(address){
+    this.transaction.from.push(address);
+  }
+
+  setToAddress(address){
+    this.transaction.to.push(address);
+  }
+
+  setAmount(amount){
+    this.transaction.amounts.push(amount);
+  }
+
+  addOutx(outx){
+    const input = convetOutxToInput(outx);
+    this.transaction.inputs.push(input);
+  }
+
+  addChangeAddress(address){
+    this.transaction.changeAddress = address;
+  }
+
+  calculateFee(){
+    const tx = new bitcoincore.Transaction();
+    const addresses = _.zipWith([this.transaction.to, this.transaction.amounts],
+      function (to, amount) {
+        return {'to': to, 'satoshi': amount};
+    });
+    tx.to(addresses);
+    tx.from(this.transaction.inputs);
+    tx.change(this.transaction.changeAddress);
+    this.transaction.fee = tx.getFee()
   }
 
 }
 
 module.exports = {
   EtherTx,
-  BitcoinTx
+  BitcoinTx,
+  EtherTxBuilder,
 };

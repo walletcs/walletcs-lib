@@ -3,8 +3,9 @@ const errors = require('./errors');
 
 /* Transaction Builders */
 class TxBuilderInterface {
-  constructor() {
+  constructor(network) {
     this.transaction = null;
+    this.network = network;
     if (!this.transaction) errorNotImpementedInterface()
   }
 
@@ -55,7 +56,7 @@ class BitcoinTxBuilderInterfce extends TxBuilderInterface {
     errors.errorNotImplementedInterface();
   }
 
-  calculateChange() {
+  addChangeAddress(address) {
     errors.errorNotImplementedInterface();
   }
 

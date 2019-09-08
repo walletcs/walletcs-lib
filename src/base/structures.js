@@ -1,4 +1,4 @@
-const Uxto = {
+const Outx = {
   address: '',        // String
   satoshi: 0,         // Integer
   txId: '',           // String
@@ -32,9 +32,19 @@ const BitcoinFileTransaction = {
   outx: []            // List[<Outx>]
 };
 
+const BitcoinInput = {
+  txId: '',           // String
+  outputIndex: '',    // String
+  address: '',        // String
+  satoshi: '',        // String
+  script: '',         // String
+
+};
+
 module.exports = {
-  Uxto,
+  Outx,
   EtherTransaction,
   EtherFileTransaction,
   BitcoinFileTransaction,
+  BitcoinInput
 };
