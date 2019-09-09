@@ -36,7 +36,7 @@ const BitcoinInput = {
   txId: '',           // String
   outputIndex: '',    // String
   address: '',        // String
-  satoshi: '',        // String
+  satoshis: '',       // String
   script: '',         // String
 
 };

@@ -6,7 +6,6 @@ class TxBuilderInterface {
   constructor(network) {
     this.transaction = null;
     this.network = network;
-    if (!this.transaction) errorNotImpementedInterface()
   }
 
   setFromAddress(address) {

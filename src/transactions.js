@@ -9,13 +9,20 @@ function convetOutxToInput(outx) {
   const input = JSON.parse(JSON.stringify(structures.BitcoinInput));
   input.address = outx.address;
   input.txId = outx.txId;
-  input.satoshi = outx.satoshi;
+  input.satoshis = outx.satoshis;
   input.outputIndex = outx.outputIndex;
-  input.script = new bitcoincore.Script(outx.address).toHex();
+  input.script = new bitcoincore.Script(bitcoincore.Address(outx.address)).toHex();
 
   return input;
 }
 
+function isFloat(n){
+    return Number(n) === n && n % 1 !== 0;
+}
+
+function convertToSatoshi (val) {
+  return parseInt(parseFloat(val)*Math.pow(10, 8))
+}
 
 class EtherTx extends transactions.EtherUnsignedTxInterface {
   constructor() {
@@ -72,7 +79,7 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
     this.changeAddress = '';
   }
 
-  __getTx() {
+  __getTX() {
     return {
       to: this.to,
       from: this.from,
@@ -85,7 +92,7 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
   }
 
   toJSON() {
-    return JSON.stringify(this.__getTx())
+    return JSON.stringify(this.__getTX())
   }
 }
 
@@ -108,24 +115,24 @@ class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
     this.transaction.value = amount;
   }
 
-  setNonce(nonce) {
-    this.transaction.nonce = nonce
+  async setNonce(nonce) {
+    if(!nonce){
+      this.transaction.nonce = await this.provider.getTransactionCount(this.transaction.from)
+    }else {
+      this.transaction.nonce = nonce
+    }
   }
 
-  calculateGasPrice() {
-    this.provider.getGasPrice().then(function (gasPrice) {
-      this.transaction.gasPrice = gasPrice;
-    })
+  async calculateGasPrice() {
+   this.transaction.gasPrice = ethers.utils.bigNumberify(await this.provider.getGasPrice());
   }
 
-  calculateGasLimit() {
-    this.provider.estimateGas(this.transaction).then(function (gasLimit) {
-      this.tranasction.gasLimit = gasLimit
-    })
+  async calculateGasLimit() {
+    this.transaction.gasLimit = ethers.utils.bigNumberify(await this.provider.estimateGas(this.transaction));
   }
 
   getResult() {
-    return this.transaction;
+    return this.transaction.__getTX();
   }
 
 }
@@ -137,15 +144,35 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
   }
 
   setFromAddress(address){
-    this.transaction.from.push(address);
+    if(_.isArray(address)){
+      this.transaction.from = _.concat(this.transaction.from, address)
+    }
+    else{
+      this.transaction.from.push(address);
+    }
   }
 
   setToAddress(address){
-    this.transaction.to.push(address);
+    if(_.isArray(address)){
+      this.transaction.to = _.concat(this.transaction.to, address)
+    }
+    else{
+      this.transaction.to.push(address);
+    }
   }
 
   setAmount(amount){
-    this.transaction.amounts.push(amount);
+    if(_.isArray(amount)){
+      this.transaction.amounts = _.concat(this.transaction.amounts, amount)
+    }else{
+      this.transaction.amounts.push(amount);
+    }
+    this.transaction.amounts = _.map(this.transaction.amounts, function (val) {
+      if(isFloat(val)) {
+        return convertToSatoshi(val);
+      }
+      return val
+    })
   }
 
   addOutx(outx){
@@ -159,20 +186,45 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
 
   calculateFee(){
     const tx = new bitcoincore.Transaction();
-    const addresses = _.zipWith([this.transaction.to, this.transaction.amounts],
+    const addresses = _.zipWith(this.transaction.to, this.transaction.amounts,
       function (to, amount) {
-        return {'to': to, 'satoshi': amount};
+        return {'address': to, 'satoshis': amount};
     });
-    tx.to(addresses);
+    console.log(addresses);
     tx.from(this.transaction.inputs);
     tx.change(this.transaction.changeAddress);
     this.transaction.fee = tx.getFee()
   }
 
+  getResult() {
+    return this.transaction.__getTX();
+  }
+
+}
+
+class EtherContractTxBuilder extends EtherTxBuilder {
+  constructor(network){
+    super(network);
+    this.transaction = new EtherContractTx();
+  }
+
+  setFromAddress(address) {
+    throw Error('This method dosen\'t use in contract transaction.')
+  }
+
+  setAbi(abi) {
+    this.transaction.abi = abi;
+  }
+
+  setData(data){
+    this.transaction.data = data;
+  }
 }
 
 module.exports = {
   EtherTx,
   BitcoinTx,
   EtherTxBuilder,
+  BitcoinTxBuilder,
+  EtherContractTxBuilder,
 };
