@@ -3,9 +3,8 @@ const errors = require('./errors');
 
 /* Transaction Builders */
 class TxBuilderInterface {
-  constructor(network) {
+  constructor() {
     this.transaction = null;
-    this.network = network;
   }
 
   setFromAddress(address) {
@@ -30,32 +29,33 @@ class EtherTxBuilderInterface extends TxBuilderInterface {
     errors.errorNotImplementedInterface();
   }
 
-  calculateGasPrice() {
+  setGasPrice() {
     errors.errorNotImplementedInterface();
   }
 
-  calculateGasLimit() {
+  setGasLimit() {
     errors.errorNotImplementedInterface();
   }
 
 }
 
 class EtherContractTxBuilderInterface extends EtherTxBuilderInterface {
-  setMethodData(data) {
+
+  setMethodName(name) {
     errors.errorNotImplementedInterface();
   }
 
-  setAbi(abi) {
+  setParameters(params) {
     errors.errorNotImplementedInterface();
   }
 }
 
 class BitcoinTxBuilderInterfce extends TxBuilderInterface {
-  addInput(input) {
+  addOutx(input) {
     errors.errorNotImplementedInterface();
   }
 
-  addChangeAddress(address) {
+  setChangeAddress(address) {
     errors.errorNotImplementedInterface();
   }
 
@@ -89,7 +89,8 @@ class EtherUnsignedTxInterface extends UnsignedTxInterface {
 class EtherContractUnsignedTxInterface extends EtherUnsignedTxInterface {
   constructor() {
     super();
-    this.abi = null;
+    this.methodName = null;
+    this.mthodParams = null;
   }
 }
 

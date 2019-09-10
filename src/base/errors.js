@@ -1,3 +1,4 @@
+const PARSING_ERROR = 'Error parser file. Check format file.';
 const INTERFACE_ERROR = 'This method must be implement.';
 
 function errorNotImplementedInterface() {
@@ -5,5 +6,6 @@ function errorNotImplementedInterface() {
 }
 
 module.exports = {
-  errorNotImplementedInterface
+  errorNotImplementedInterface,
+  PARSING_ERROR
 };

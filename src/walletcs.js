@@ -1,138 +1,213 @@
-import 'babel-polyfill';
-import {EtherTransactionDecoder} from './ether';
-import {utils} from 'ethers';
-import { Transaction, address} from 'bitcoinjs-lib'
+const ethers = require('ethers');
+const bip39 = require ('bip39');
+const bip32 = require('bip32');
+const bitcoinjs = require('bitcoinjs-lib');
+const bitcore = require('bitcore-lib');
+const walletcs = require('./base/walletc');
 
-export class FileTransactionGenerator {
-  constructor(publicKey) {
-    this.tx = [];
-    this.contracts = [];
-    this._publicKey = publicKey;
+const DEEP_SEARCH = 1000;
+
+const _chooseNetwork = (network) =>
+    // Choose between two networks testnet and main
+{
+  if (!network && (network !== 'test3' || network !== 'main')) {
+    throw Error('network parameter is required and must be one of "main" or "test3"')
+  }
+  if (network === 'test3'){
+    return bitcoinjs.networks.testnet
+  }
+  else {
+    return bitcoinjs.networks.bitcoin
+  }
+};
+
+function getAddress (node, network) {
+  return bitcoinjs.payments.p2pkh({ pubkey: node.publicKey, network }).address
+}
+
+export const checkBitcoinAdress = (address) => {
+  if (address.length < 26 || address.length > 35) {
+    return false;
+  }
+  let re = /^[A-Z0-9]+$/i;
+
+  return re.test(address)
+};
+
+export const addressIsMainNet = (address) => {
+  const prefixes = ['1', '3', 'xpub', 'bc1'];
+  for (let i = 0; i < prefixes.length; i += 1) {
+    if (address.startsWith(prefixes[i])){
+      return true
+    }
+  }
+  return false;
+};
+
+export const privateKeyIsMainNet = (pr) => {
+  const prefixes = ['K', 'L', '5', 'xprv'];
+  for (let i = 0; i < prefixes.length; i += 1) {
+    if (pr.startsWith(pr[i])){
+      return true
+    }
+  }
+  return false;
+};
+
+class BitcoinWalletHD extends walletcs.WalletHDInterface {
+  constructor(network) {
+    super();
+    this.network = _chooseNetwork(network)
+  }
+  // BIP39
+  static generateMnemonic() {
+    return bip39.generateMnemonic();
   }
 
-  addContract(address, abi){
-    this.contracts.push({'contract': address, 'abi': abi})
+  static validateMnemonic(mnemonic){
+    return bip39.validateMnemonic(mnemonic);
   }
 
-  addTx(contract, tx, network){
-    this.tx.push({'contract': contract, 'transaction': tx, network: network})
+  __builtTx(unsignedTx){
+    const tx = new bitcore.Transaction();
+    tx.from(unsignedTx.inputs);
+    const addresses = _.zipWith(this.transaction.to, this.transaction.amounts,
+      function (to, amount) {
+        return {'address': to, 'satoshis': amount};
+    });
+    tx.to(addresses);
+    tx.change(unsignedTx.changeAddress);
+    tx.fee(tx.getFee());
+
+    return tx;
   }
 
-  deleteTx(index){
-    this.tx.splice(index, 1)
+  async getFromMnemonic(mnemonic) {
+    if (!bip39.validateMnemonic(mnemonic)) throw Error('Not valid mnemonic.');
+    const seed = await bip39.mnemonicToSeed(mnemonic);
+    const root = bip32.fromSeed(seed, this.network);
+    return {'xPub': root.neutered().toBase58(), 'xPriv': root.toBase58()} // xPub, xPriv
   }
 
-  deleteContract(index){
-    this.contracts.splice(index, 1)
+  // BIP32
+  getAddressFromXpub(xpub, number_address) {
+    // Use BIP32 method for get child key
+    const address = bitcoinjs.payments.p2pkh({
+      pubkey: bip32.fromBase58(xpub, this.network).derive(0).derive(number_address).publicKey,
+      network: this.network
+    }).address;
+
+    return address
+  };
+
+  getxPubFromXprv(xprv) {
+    const node = bip32.fromBase58(xprv, this.network);
+
+    return node.neutered().toBase58();
   }
 
-  getAbi(contractAddress){
-    // Only for ether contract transactions
-    for(let key in this.contracts){
-      if(contractAddress === this.contracts[key].contract){
-        return this.contracts[key].abi
+  getAddressWithPrivateFromXprv(xprv, number_address) {
+    // Use BIP32 method for get child key
+    const root = bip32.fromBase58(xprv, this.network);
+    const child1b = root
+      .derive(0)
+      .derive(number_address);
+
+    return  {'address': getAddress(child1b, this.network), 'privateKey': child1b.toWIF()}
+
+  };
+
+  searchAddressInParent(xprv, address, deep) {
+    for (let i = 0; i < deep; i += 1) {
+      let pair = this.getAddressWithPrivateFromXprv(xprv, i);
+      if (pair.address === address){
+        return pair
       }
     }
+    return null
   }
 
-  generateJson(){
-    let obj = {};
-    obj['pub_key'] = this._publicKey;
+  async signTransactionByPrivateKey(prv, unsignedTx){
+    const tx = this.__builtTx(unsignedTx);
+    tx.sign(new bitcore.PrivateKey(prv));
+    return tx.serialize()
+  }
 
-    if(this.tx.length !== 0){
-      obj['transactions'] = this.tx
+  async signTransactionByxPriv(xpriv, unsignedTx, addresses) {
+    const tx = this.__builtTx(unsignedTx);
+    for(let i = 0; i < addresses.length; i += 1){
+      const pair = this.searchAddressInParent(xpriv, addresses[i]);
+      if (pair) {
+        tx.sign(new bitcore.PrivateKey(pair.privateKey));
+      }
+      if(tx.isFullySigned()){
+        return tx.serialize()
+      }
     }
-
-    if(this.contracts.length !== 0){
-      obj['contracts'] = this.contracts
-    }
-
-    return JSON.stringify(obj)
+    return null
   }
 
 }
 
-export class FileTransactionReader {
-  constructor(file) {
-    this._file = file;
-    this._transactions = [];
-    this._contracts = [];
+class EtherWalletHD extends walletcs.WalletHDInterface {
+
+  static generateMnemonic() {
+    return ethers.utils.HDNode.entropyToMnemonic(ethers.utils.randomBytes(16))
   }
 
-  get transactions(){
-    return this._transactions
+  static validateMnemonic(mnemonic) {
+    return ethers.utils.HDNode.isValidMnemonic(mnemonic);
   }
 
-  get contracts(){
-    return this._contracts
+  __builtTx(unsignedTx) {
+    return unsignedTx.toJSON();
   }
 
-  _parserEtherFile() {
-    let json = JSON.parse(this._file);
+  getFromMnemonic (mnemonic) {
+    ethers.utils.HDNode.isValidMnemonic(mnemonic);
+    const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
+    return {'xPub': node.neuter().extendedKey, 'xPrv': node.extendedKey} // returns xPub xPrv
+  }
 
-    if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
-      throw 'File format is not correct'
-    }
-    //Set all contracts
-    this._contracts = json.contracts;
-    // Decode all transaction from file
-    let transactions = json.transactions;
-    for(let key in transactions){
-      let objTx = transactions[key];
-      let tx = new EtherTransactionDecoder(objTx.transaction);
-      tx.decode();
+  getAddressWithPrivateFromXprv(xprv, number_address) {
+    // Use BIP32 method for get child key
+    const root = ethers.utils.HDNode.fromExtendedKey(xprv);
+    const standardEthereum = root.derivePath(`0/${number_address || 0}`);
+    return {'address': standardEthereum.address, 'privateKey': standardEthereum.privateKey}
+  };
 
-      if (tx.result.data !== '0x') {
-        EtherTransactionDecoder.addABI(this.contracts.map(function (obj) {if(obj.contract === tx.result.to) return obj.abi})[0]);
+  getAddressFromXpub(xpub, number_address) {
+    // Use BIP32 method for get child key
+    const root = ethers.utils.HDNode.fromExtendedKey(xpub);
+    const standardEthereum = root.derivePath(`0/${number_address || 0}`);
+    return standardEthereum.address
+  }
+
+  searchAddressInParent(xprv, address, deep) {
+    for (let i = 0; i < deep || DEEP_SEARCH; i += 1) {
+      let pair = this.getAddressWithPrivateFromXprv(xprv, i);
+      if (pair.address === address){
+        return pair
       }
-      this._transactions.push({contract: objTx.contract, transaction: tx.getTransaction()})
     }
+    return null
   }
 
-  _parserBitcoinFile(){
-    let json = JSON.parse(this._file);
-
-    if(json.transactions === undefined || !Array.isArray(json.transactions) || json.transactions.length === 0){
-      throw 'File format is not correct'
-    }
-    // Decode all transaction from file
-    let transactions = json.transactions;
-    for(let key in transactions){
-
-      let objTx = transactions[key];
-      let tx = Transaction.fromHex(objTx.transaction);
-
-      let params = [];
-      tx.outs.forEach((out) => {
-        try {
-          params.push({value: out.value, to: address.fromOutputScript(out.script)})
-        } catch (e) {
-          console.log(e)
-        }
-      });
-      this._transactions.push({contract: null, transaction: tx, params: params})
-    }
+  async signTransactionByPrivateKey(prv, unsignedTx){
+    const tx = this.__builtTx(unsignedTx);
+    const wallet = new ethers.Wallet(prv);
+    return await wallet.sign(tx);
   }
-  // bitcoin boolean
-  parserFile(bitcoin) {
-    if(!bitcoin) this._parserEtherFile();
-    if(bitcoin) this._parserBitcoinFile()
+
+  async signTransactionByxPriv(xpriv, unsignedTx, addresses) {
+    for(let i = 0; i < addresses.length; i += 1){
+      const pair = this.searchAddressInParent(xpriv, addresses[i]);
+      if (pair) {
+       return await this.signTransactionByPrivateKey(pair.privateKey, unsignedTx)
+      }
+
+    }
+    return null
   }
+
 }
-
-export function checkAddress(key) {
-    if(!key){
-      return false
-    }
-
-    return key.length === 42 && key.startsWith('0x');
-  }
-
-export function checkPrivateKey(key) {
-  try {
-    let w = new utils.SigningKey(key);
-  }catch (e) {
-    return false
-  }
-  return true
-  }

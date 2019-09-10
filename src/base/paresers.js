@@ -5,7 +5,7 @@ class FileParserInterface {
     errors.errorNotImplementedInterface();
   }
 
-  paresFile(file, type) {
+  parseFile(file, type) {
      errors.errorNotImplementedInterface();
   }
 

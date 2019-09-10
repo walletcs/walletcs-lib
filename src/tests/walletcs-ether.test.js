@@ -1,4 +1,4 @@
-import {FileTransactionGenerator, FileTransactionReader} from '../walletcs';
+import {FileTransactionGenerator, FileTransactionReader} from '../walletcs_old';
 import {TransactionBitcoin, BitcoinWallet} from '../bitcoin';
 import {ethers} from "ethers";
 import {EtherWallet} from "../ether";

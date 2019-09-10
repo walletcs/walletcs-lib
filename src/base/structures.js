@@ -16,6 +16,14 @@ const EtherTransaction = {
   value: 0,           // Integer
 };
 
+const EtherContractTransaction = {
+    to: '',             // String
+    data: '0x0',        // String
+    nonce: 0,           // Integer
+    gasLimit: 0,        // Integer
+    gasPrice: 0,        // Integer
+}
+
 const EtherFileTransaction = {
   publicKey: '',       // String
   transactions: [],    // List[<EtherTransaction>]
@@ -46,5 +54,6 @@ module.exports = {
   EtherTransaction,
   EtherFileTransaction,
   BitcoinFileTransaction,
-  BitcoinInput
+  BitcoinInput,
+  EtherContractTransaction
 };
