@@ -1,9 +1,8 @@
 const Outx = {
   address: '',        // String
-  satoshi: 0,         // Integer
+  satoshis: 0,         // Integer
   txId: '',           // String
   outputIndex: '',    // String
-  script: ''          // String
 };
 
 const EtherTransaction = {
@@ -22,19 +21,18 @@ const EtherContractTransaction = {
     nonce: 0,           // Integer
     gasLimit: 0,        // Integer
     gasPrice: 0,        // Integer
-}
+};
 
 const EtherFileTransaction = {
-  publicKey: '',       // String
+  pubKey: '',       // String
   transactions: [],    // List[<EtherTransaction>]
-  contract: []         // List[<ABI>]
+  contracts: []         // List[<ABI>]
 };
 
 const BitcoinFileTransaction = {
   from: [],           // List[String]
   to: [],             // List[String]
-  amounts: [],        // List[Float]
-  change: 0,          // Float
+  amount: [],        // List[Float]
   fee: 0,             // Float
   changeAddress: '',  // String
   outx: []            // List[<Outx>]

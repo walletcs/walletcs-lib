@@ -21,58 +21,81 @@ class JSONParser extends parsers.FileParserInterface {
 
       const result = [];
       if (typeFile === FILES_TYPES.ether) {
-        try{
-          this.__checkListStructure(data.transactions, structures.EtherTransaction);
-          const builder = new transactions.EtherTx();
-          const director = new transactions.TransactionConstructor(builder);
-          _.each(data.transactions, function (tx) {
-            result.push(director.buildEtherTx(tx));
-          });
-        }catch (e) {
-          this.__checkListStructure(data.transactions, structures.EtherContractTransaction);
-          const builder = new transactions.EtherContractTxBuilder();
-          const director = new transactions.TransactionConstructor(builder);
-          _.each(data.transactions, function (tx) {
+        _.each(data.transactions, function (tx) {
+          let builder = null;
+          let director = null;
+          let createdTx = null;
+          console.log(JSONParser.__isEtherStructure(tx), JSONParser.__isContractStructure(tx));
+          if(JSONParser.__isEtherStructure(tx)){
+            builder = new transactions.EtherTxBuilder();
+            director = new transactions.TransactionConstructor(builder);
+            createdTx = director.buildEtherTx(tx)}
+          else if(JSONParser.__isContractStructure(tx)){
+            builder = new transactions.EtherContractTxBuilder();
+            director = new transactions.TransactionConstructor(builder);
             const contract = _.filter(data.contracts, function (contract) {
               return contract.address === tx.to;
             });
-            result.push(director.buildEtherContractTx(tx, contract[0]));
-          });
-        }
+            createdTx = director.buildEtherContractTx(tx, contract[0].abi);
+          }else{
+            throw Error(errors.PARSING_ERROR);
+          }
+          result.push(createdTx);
+        });
       }
 
       if (typeFile === FILES_TYPES.bitcoin) {
-        this.__checkListStructure(data.outxs, structures.Outx);
+        JSONParser.__checkListStructure(data.outx, structures.Outx);
         const builder = new transactions.BitcoinTxBuilder();
         const director = new transactions.TransactionConstructor(builder);
-        for (let i = 0; i < data.outxs.length; i += 1) {
-          result.push(director.buildBitcoinTx(data.outxs[i], data.from, data.to, data.changeAddress));
-        }
+        const tx = director.buildBitcoinTx(data.outx, data.from, data.to, data.amount, data.changeAddress);
+        result.push(tx);
+
       }
 
       return result;
       
     }catch (e) {
+      console.log(e);
       throw Error(errors.PARSING_ERROR)
     }
   }
 
   static getType(data){
-    if (Object.keys(data) === Object.keys(structures.BitcoinFileTransaction)){
+    const sortedKeys = Object.keys(data).sort();
+    if (_.isEqual(sortedKeys, Object.keys(structures.BitcoinFileTransaction).sort())){
       return FILES_TYPES.bitcoin;
     }
-    if (Object.keys(data) === Object.keys((structures.EtherFileTransaction))){
+
+    if (_.isEqual(sortedKeys, Object.keys(structures.EtherFileTransaction).sort())){
       return FILES_TYPES.ether;
     }
 
     return FILES_TYPES.unknown;
   }
+
+  static __isContractStructure(data){
+    return this.__checkStructure(data, structures.EtherContractTransaction);
+  }
+
+  static __isEtherStructure(data){
+    return this.__checkStructure(data, structures.EtherTransaction);
+  }
+
+  static __checkStructure(inputStructure, exampleStructure) {
+    return _.isEqual(Object.keys(inputStructure).sort(), Object.keys(exampleStructure).sort())
+  }
   
-  __checkListStructure(data, structure){
+  static __checkListStructure(data, structure){
+    const sortedKeys = Object.keys(structure).sort();
     _.each(data, function (item) {
-       if(Object.keys(item) !== Object.keys(structure)){
+       if(!_.isEqual(Object.keys(item).sort(), sortedKeys)){
          throw Error(errors.PARSING_ERROR)
        }
     })
   }
 }
+
+module.exports = {
+  JSONParser,
+};

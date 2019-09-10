@@ -59,7 +59,7 @@ class BitcoinTxBuilderInterfce extends TxBuilderInterface {
     errors.errorNotImplementedInterface();
   }
 
-  calculateFee() {
+  calculateFee(fee) {
     errors.errorNotImplementedInterface();
   }
 }
@@ -99,7 +99,6 @@ class BitcoinUnsignedTxInterface extends UnsignedTxInterface {
     super();
     this.amounts = null;
     this.inputs = null;
-    this.change = null;
     this.changeAddress = null;
     this.fee = null;
   }

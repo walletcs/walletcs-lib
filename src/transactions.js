@@ -22,7 +22,10 @@ function isFloat(n){
 }
 
 function convertToSatoshi (val) {
-  return parseInt(parseFloat(val)*Math.pow(10, 8))
+  if (isFloat(val)){
+    return parseInt(parseFloat(val)*Math.pow(10, 8))
+  }
+  return val
 }
 
 class EtherTx extends transactions.EtherUnsignedTxInterface {
@@ -117,7 +120,7 @@ class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
   }
 
   setAmount(amount) {
-    this.transaction.value = amount;
+    this.transaction.value =  parseInt(amount || 0);
   }
 
   setNonce(nonce) {
@@ -186,16 +189,20 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
     this.transaction.changeAddress = address;
   }
 
-  calculateFee(){
-    const tx = new bitcore.Transaction();
-    const addresses = _.zipWith(this.transaction.to, this.transaction.amounts,
-      function (to, amount) {
-        return {'address': to, 'satoshis': amount};
-    });
-    tx.to(addresses);
-    tx.from(this.transaction.inputs);
-    tx.change(this.transaction.changeAddress);
-    this.transaction.fee = tx.getFee()
+  calculateFee(fee){
+    if (!fee) {
+      const tx = new bitcore.Transaction();
+      const addresses = _.zipWith(this.transaction.to, this.transaction.amounts,
+        function (to, amount) {
+          return {'address': to, 'satoshis': amount};
+      });
+      tx.to(addresses);
+      tx.from(this.transaction.inputs);
+      tx.change(this.transaction.changeAddress);
+      this.transaction.fee = tx.getFee();
+    }else{
+      this.transaction.fee = convertToSatoshi(fee)
+    }
   }
 
   getResult() {
@@ -227,7 +234,7 @@ class EtherContractTxBuilder extends transactions.EtherContractTxBuilderInterfac
   }
 
   setAmount(amount) {
-    this.transaction.value = amount;
+    this.transaction.value = parseInt(amount || 0);
   }
 
   setNonce(nonce) {
@@ -257,20 +264,21 @@ class TransactionConstructor {
     this.builder = builder;
   }
 
-  buildBitcoinTx(outxs, from, to, amounts, changeAddress){
+  buildBitcoinTx(outxs, from, to, amounts, changeAddress, fee){
     this.builder.setFromAddress(from);
     this.builder.setToAddress(to);
     this.builder.setAmount(amounts);
+    const self = this;
     if (_.isArray(outxs)){
       _.each(outxs, function (outx) {
-        this.builder.addOutx(outx);
+        self.builder.addOutx(outx);
       })
     }
     else{
       this.builder.addOutx(outxs);
     }
     this.builder.setChangeAddress(changeAddress);
-    this.builder.calculateFee();
+    this.builder.calculateFee(fee);
     return this.builder.getResult()
   }
 
