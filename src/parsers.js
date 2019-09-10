@@ -25,7 +25,7 @@ class JSONParser extends parsers.FileParserInterface {
           let builder = null;
           let director = null;
           let createdTx = null;
-          console.log(JSONParser.__isEtherStructure(tx), JSONParser.__isContractStructure(tx));
+
           if(JSONParser.__isEtherStructure(tx)){
             builder = new transactions.EtherTxBuilder();
             director = new transactions.TransactionConstructor(builder);

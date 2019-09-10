@@ -1,4 +1,3 @@
-const classes = require('extends-classes');
 const errors = require('./errors');
 
 class BIP32Interface {
@@ -19,7 +18,7 @@ class BIP32Interface {
   }
 }
 
-class BIP39Interface {
+class BIP39Interface extends BIP32Interface{
   getFromMnemonic(mnemonic) {
     errors.errorNotImplementedInterface();
   }
@@ -33,7 +32,7 @@ class BIP39Interface {
   }
 }
 
-class WalletHDInterface extends classes(BIP32Interface, BIP39Interface) {
+class WalletHDInterface extends BIP39Interface {
   signTransactionByPrivateKey(prvKey, unsignedTx) {
     errors.errorNotImplementedInterface();
   }

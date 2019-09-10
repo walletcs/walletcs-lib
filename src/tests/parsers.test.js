@@ -6,6 +6,7 @@ const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb8401231066
 const etherFileTx = {"pubKey":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value":"1","data":"0x", "from": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}],"contracts":[]};
 const etherContractFileTx = {"pubKey":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3", "data":"0x1" }],"contracts":[{'address': '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3', 'abi': []}]};
 const mixedEtherFileTx = {"pubKey":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value":"1","data":"0x", "from": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}, {"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3", "data":"0x1" }],"contracts":[{'address': '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3', 'abi': []}]};
+
 test('Test parser bitcoin file tx', async () => {
   const result = parsers.JSONParser.parseFile(JSON.stringify(bitcoinFileTx));
 

@@ -1,8 +1,14 @@
-import {FileTransactionGenerator, FileTransactionReader} from '../walletcs_old';
-import {TransactionBitcoin, BitcoinWallet} from '../bitcoin';
+import {
+  FileTransactionGenerator,
+  FileTransactionReader
+} from '../walletcs_old';
+import {BitcoinWallet, TransactionBitcoin} from '../bitcoin';
 import {ethers} from "ethers";
 import {EtherWallet} from "../ether";
-import {ConverterBitcoinCSVToTxObject, ConverterEtherCSVToTxObject} from '../utils'
+import {
+  ConverterBitcoinCSVToTxObject,
+  ConverterEtherCSVToTxObject
+} from '../utils'
 
 let privateKey = new ethers.utils.SigningKey('F13BD89E70DFC84BF46743A5824AD2CA485C61D998994048510F758CC47E4D6D');
 const publicKey = '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3';

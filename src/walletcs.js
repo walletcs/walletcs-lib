@@ -1,3 +1,6 @@
+"use strict";
+require("babel-core/register");
+require("babel-polyfill");
 const ethers = require('ethers');
 const bip39 = require ('bip39');
 const bip32 = require('bip32');
@@ -211,3 +214,8 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   }
 
 }
+
+module.exports = {
+  BitcoinWalletHD,
+  EtherWalletHD
+};
