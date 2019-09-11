@@ -7,6 +7,7 @@ const bip32 = require('bip32');
 const bitcoinjs = require('bitcoinjs-lib');
 const bitcore = require('bitcore-lib');
 const walletcs = require('./base/walletc');
+const _ = require('lodash');
 
 const DEEP_SEARCH = 1000;
 
@@ -74,7 +75,7 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
   __builtTx(unsignedTx){
     const tx = new bitcore.Transaction();
     tx.from(unsignedTx.inputs);
-    const addresses = _.zipWith(this.transaction.to, this.transaction.amounts,
+    const addresses = _.zipWith(unsignedTx.to, unsignedTx.amounts,
       function (to, amount) {
         return {'address': to, 'satoshis': amount};
     });
@@ -115,13 +116,12 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     const child1b = root
       .derive(0)
       .derive(number_address);
-
-    return  {'address': getAddress(child1b, this.network), 'privateKey': child1b.toWIF()}
+    return {'address': getAddress(child1b, this.network), 'privateKey': child1b.toWIF()}
 
   };
 
   searchAddressInParent(xprv, address, deep) {
-    for (let i = 0; i < deep; i += 1) {
+    for (let i = 0; i < deep || DEEP_SEARCH; i += 1) {
       let pair = this.getAddressWithPrivateFromXprv(xprv, i);
       if (pair.address === address){
         return pair
