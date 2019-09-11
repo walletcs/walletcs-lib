@@ -89,7 +89,6 @@ class JSONParser extends parsers.FileParserInterface {
   static __checkListStructure(data, structure){
     const sortedKeys = Object.keys(structure).sort();
     _.each(data, function (item) {
-      console.log(!_.isEqual(Object.keys(item).sort(), sortedKeys));
        if(!_.isEqual(Object.keys(item).sort(), sortedKeys)){
          throw Error(errors.PARSING_ERROR)
        }

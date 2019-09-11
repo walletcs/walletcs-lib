@@ -119,7 +119,7 @@ test('Test sign bitcoin transaction', async () => {
   const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor', network);
   const xprv = addresses.xPriv;
   const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
-  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":10000}],"from":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"to":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"amount":[10000,110000], "changeAddress": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "fee": null};
+  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": child1.address,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address":child1.address,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": child1.address,"satoshis":10000}],"from":[child1.address],"to":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"amount":[10000,110000], "changeAddress": child1.address, "fee": null};
   const unsigedTxs = parsers.JSONParser.parseFile(JSON.stringify(bitcoinFileTx));
   const tx = unsigedTxs[0];
   const sinedTx = await wallet.signTransactionByPrivateKey(child1.privateKey, tx);
@@ -134,12 +134,12 @@ test('Test sign bitcoin transaction by xPrv', async () => {
   const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor', network);
   const xprv = addresses.xPriv;
   const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
-  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address":child1.address,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": child1.address,"satoshis":10000}],"from":[child1.address],"to":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"amount":[10000,110000], "changeAddress": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "fee": null};
+  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": child1.address,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address":child1.address,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": child1.address,"satoshis":10000}],"from":[child1.address],"to":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"amount":[10000,110000], "changeAddress": child1.address, "fee": null};
   const unsigedTxs = parsers.JSONParser.parseFile(JSON.stringify(bitcoinFileTx));
   const tx = unsigedTxs[0];
   const sinedTx = await wallet.signTransactionByPrivateKey(child1.privateKey, tx);
   const xprvSinedTx = await wallet.signTransactionByxPriv(xprv, tx, [child1.address]);
 
-  expect(sinedTx).not.toEqual(xprvSinedTx);
+  expect(sinedTx).toEqual(xprvSinedTx);
 
 });
