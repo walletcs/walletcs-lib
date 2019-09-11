@@ -183,12 +183,14 @@ export class EtherWallet {
   }
 
   static getAddressWithPrivateFromXprv(xprv, number_address) {
+    // Use BIP32 method for get child key
     const root = ethers.utils.HDNode.fromExtendedKey(xprv);
     const standardEthereum = root.derivePath(`0/${number_address || 0}`);
     return [standardEthereum.address, standardEthereum.privateKey]
   };
 
   static getAddressFromXpub(xpub, number_address) {
+    // Use BIP32 method for get child key
     const root = ethers.utils.HDNode.fromExtendedKey(xpub);
     const standardEthereum = root.derivePath(`0/${number_address || 0}`);
     return standardEthereum.address

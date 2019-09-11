@@ -276,6 +276,7 @@ export class BitcoinWallet {
   }
     
   static getAddressWithPrivateFromXprv(xprv, number_address, network) {
+    // Use BIP32 method for get child key
     const root = bip32.fromBase58(xprv, _chooseNetwork(network));
     const child1b = root
       .derive(0)
@@ -286,6 +287,7 @@ export class BitcoinWallet {
   };
 
   static getAddressFromXpub(xpub, number_address, network) {
+    // Use BIP32 method for get child key
     const _network = _chooseNetwork(network);
     const address = payments.p2pkh({
       pubkey: bip32.fromBase58(xpub, _network).derive(0).derive(number_address).publicKey,
