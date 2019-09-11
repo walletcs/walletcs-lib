@@ -1,5 +1,6 @@
 const wallets = require('../walletcs');
-
+const transactions = require('../transactions');
+const ethers = require('ethers');
 
 test('Test create pair keys from mnemonic',  async () => {
   const wallet = new wallets.EtherWalletHD();
@@ -35,4 +36,38 @@ test('Test get number account from xprv', async () => {
 
   expect(child1.address).toEqual('0x343E60ACea58388fCba2C21F302312feCf55175A');
   expect(child1.privateKey).toEqual('0x51778a8e47592afeaa55ca845cf27a4a8f996f9590d2694eac9b9fb2b5efd40a');
+});
+
+test('Test sign transaction ', async () => {
+  const wallet = new wallets.EtherWalletHD();
+  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPrv;
+  const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
+  const tx = new transactions.EtherTx();
+  tx.to = '0x343E60ACea58388fCba2C21F302312feCf55175A';
+  tx.gasPrice = ethers.utils.bigNumberify(1000000000);
+  tx.gasLimit = ethers.utils.bigNumberify(21000);
+  tx.value = ethers.utils.parseEther("0.0001");
+  const sinedTx = await wallet.signTransactionByPrivateKey(child1.privateKey, tx);
+
+  expect(sinedTx).not.toEqual(undefined);
+
+});
+
+test('Test sign transaction by xprv key', async () => {
+  const wallet = new wallets.EtherWalletHD();
+  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPrv;
+  const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
+  const tx = new transactions.EtherTx();
+  tx.to = '0x343E60ACea58388fCba2C21F302312feCf55175A';
+  tx.gasPrice = ethers.utils.bigNumberify(1000000000);
+  tx.gasLimit = ethers.utils.bigNumberify(21000);
+  tx.value = ethers.utils.parseEther("0.0001");
+  const sinedTx = await wallet.signTransactionByPrivateKey(child1.privateKey, tx);
+
+  const xprvSinedTx = await wallet.signTransactionByxPriv(xprv, tx, child1.address);
+
+  expect(xprvSinedTx).toEqual(sinedTx);
+
 });

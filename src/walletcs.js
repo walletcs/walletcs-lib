@@ -163,7 +163,7 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   }
 
   __builtTx(unsignedTx) {
-    return unsignedTx.toJSON();
+    return unsignedTx.getTx();
   }
 
   getFromMnemonic (mnemonic) {
@@ -203,13 +203,10 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   }
 
   async signTransactionByxPriv(xpriv, unsignedTx, addresses) {
-    for(let i = 0; i < addresses.length; i += 1){
-      const pair = this.searchAddressInParent(xpriv, addresses[i]);
+      const pair = this.searchAddressInParent(xpriv, addresses);
       if (pair) {
        return await this.signTransactionByPrivateKey(pair.privateKey, unsignedTx)
       }
-
-    }
     return null
   }
 

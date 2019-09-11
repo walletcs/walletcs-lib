@@ -11,7 +11,6 @@ test('Test create empty unspent EtherTx', async () => {
   const etherTx = new transactions.EtherTx();
 
   expect(etherTx.to).toEqual('');
-  expect(etherTx.from).toEqual('');
   expect(etherTx.value).toEqual(0);
   expect(etherTx.gasPrice).toEqual(ethers.utils.bigNumberify(0));
   expect(etherTx.gasLimit).toEqual((ethers.utils.bigNumberify(0)));
@@ -25,7 +24,6 @@ test('Test convert to JSON empty unspent EtherTx', async () => {
    const stringRepr = etherTx.toJSON();
    const expected = JSON.stringify( {
       to: '',
-      from: '',
       value: 0,
       gasPrice: 0,
       gasLimit: 0,
@@ -75,7 +73,6 @@ test('Test build Ether transaction', async () => {
   const transaction = builder.getResult();
   expect(transaction.nonce).toEqual(1);
   expect(transaction.to).toEqual(ETHER_ADDRESS);
-  expect(transaction.from).toEqual(ETHER_ADDRESS);
   expect(transaction.value).toEqual(2);
   expect(transaction.gasLimit).toEqual(ethers.utils.bigNumberify(21000));
   expect(transaction.gasPrice).toEqual(ethers.utils.bigNumberify((1000000000)));
@@ -169,7 +166,6 @@ test('Test Ether director builder', async () => {
   rawTx.gasPrice = 1000000000;
   rawTx.nonce = 1;
   rawTx.value = 2;
-  rawTx.from = ETHER_ADDRESS;
   rawTx.to = ETHER_ADDRESS;
 
   const builder = new transactions.EtherTxBuilder();
@@ -178,7 +174,6 @@ test('Test Ether director builder', async () => {
 
   expect(transaction.nonce).toEqual(1);
   expect(transaction.to).toEqual(ETHER_ADDRESS);
-  expect(transaction.from).toEqual(ETHER_ADDRESS);
   expect(transaction.value).toEqual(2);
   expect(transaction.gasLimit).toEqual(ethers.utils.bigNumberify(21000));
   expect(transaction.gasPrice).toEqual(ethers.utils.bigNumberify((1000000000)));

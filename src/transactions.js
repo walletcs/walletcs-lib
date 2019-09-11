@@ -32,7 +32,6 @@ class EtherTx extends transactions.EtherUnsignedTxInterface {
   constructor() {
     super();
     this.to = '';
-    this.from = '';
     this.value = 0;
     this.gasPrice = ethers.utils.bigNumberify(0);
     this.gasLimit = ethers.utils.bigNumberify(0);
@@ -43,7 +42,6 @@ class EtherTx extends transactions.EtherUnsignedTxInterface {
   __getTX() {
     return {
       to: this.to,
-      from: this.from,
       value: this.value,
       gasPrice: this.gasPrice.toNumber(),
       gasLimit: this.gasLimit.toNumber(),
@@ -54,6 +52,10 @@ class EtherTx extends transactions.EtherUnsignedTxInterface {
 
   toJSON() {
     return JSON.stringify(this.__getTX())
+  }
+
+  getTx() {
+    return this.__getTX();
   }
 }
 
@@ -111,16 +113,12 @@ class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
     this.transaction = new EtherTx()
   }
 
-  setFromAddress(address) {
-    this.transaction.from = address;
-  }
-
   setToAddress(address) {
     this.transaction.to = address;
   }
 
   setAmount(amount) {
-    this.transaction.value =  parseInt(amount || 0);
+    this.transaction.value =  ethers.utils.parseEther(amount || 0);
   }
 
   setNonce(nonce) {
@@ -217,10 +215,6 @@ class EtherContractTxBuilder extends transactions.EtherContractTxBuilderInterfac
     this.transaction = new EtherContractTx();
   }
 
-  setFromAddress(address) {
-    throw Error('This method dosen\'t use in contract transaction.')
-  }
-
   setMethodName(name) {
     this.transaction.nameMethod = name;
   }
@@ -231,10 +225,6 @@ class EtherContractTxBuilder extends transactions.EtherContractTxBuilderInterfac
 
   setToAddress(address) {
     this.transaction.to = address;
-  }
-
-  setAmount(amount) {
-    this.transaction.value = parseInt(amount || 0);
   }
 
   setNonce(nonce) {

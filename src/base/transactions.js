@@ -7,10 +7,6 @@ class TxBuilderInterface {
     this.transaction = null;
   }
 
-  setFromAddress(address) {
-    errors.errorNotImplementedInterface();
-  }
-
   setToAddress(address) {
     errors.errorNotImplementedInterface();
   }
@@ -51,6 +47,10 @@ class EtherContractTxBuilderInterface extends EtherTxBuilderInterface {
 }
 
 class BitcoinTxBuilderInterfce extends TxBuilderInterface {
+  setFromAddress(address) {
+    errors.errorNotImplementedInterface();
+  }
+
   addOutx(input) {
     errors.errorNotImplementedInterface();
   }
