@@ -57,13 +57,14 @@ test('Test parser ether mixed file', async() => {
   expect(result[0].data).toEqual('0x');
 });
 
-test('Test not correct format file', async () => {
+test('Test for empty file', async () => {
   expect(() => {
       parsers.JSONParser.parseFile('');
-  }).toThrow()
+  }).toThrow();
+  expect(parsers.JSONParser.getType('')).toEqual('unknown');
 });
 
-test('Test parse empty ether tx file', async () => {
+test('Test parsing not filled ether file out ', async () => {
   const emptyEtherFile = {"pubKey":"","transactions":[],"contracts":[]};
   const result = parsers.JSONParser.parseFile(JSON.stringify(emptyEtherFile));
   const typeFile = parsers.JSONParser.getType(JSON.stringify(emptyEtherFile));
@@ -72,12 +73,11 @@ test('Test parse empty ether tx file', async () => {
   expect(typeFile).toEqual('ETHFileTX');
 });
 
-test('Test parse empty bitcoin tx file', async ()=> {
-  const emptyBitcoinFileTx = { "outx":[],"from":[],"to":[],"amount":[], "changeAddress": "", "fee": null};
+test('Test parsing not filled bitcoin file out', async ()=> {
+  const emptyBitcoinFileTx = {"outx":[],"from":[],"to":[],"amount":[], "changeAddress": "", "fee": null};
   const result = parsers.JSONParser.parseFile(JSON.stringify(emptyBitcoinFileTx));
   const typeFile = parsers.JSONParser.getType(JSON.stringify(emptyBitcoinFileTx));
   expect(_.isArray(result)).toBeTruthy();
   expect(result.length).toEqual(0);
   expect(typeFile).toEqual('BTCFileTX');
-
 });
