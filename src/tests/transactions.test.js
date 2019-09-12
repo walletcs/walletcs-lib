@@ -25,6 +25,34 @@ test('Test convert to JSON empty unspent EtherTx', async () => {
    expect(etherTx.isCompleted()).not.toBeTruthy();
 });
 
+test('Test convert to JSON empty unspent EtherContractTx', async () => {
+   const etherTx = new transactions.EtherContractTx();
+   expect(etherTx.isCompleted()).not.toBeTruthy();
+});
+
+test('Test convert EtherTx to JSON', async () => {
+  const etherTx = new transactions.EtherTx();
+  etherTx.to = '0x000000000000000000000000000000000';
+  etherTx.gasPrice = ethers.utils.bigNumberify(1000000000);
+  etherTx.gasLimit = ethers.utils.bigNumberify(21000);
+  etherTx.value = ethers.utils.parseEther('0.001');
+  etherTx.nonce = 1;
+
+  expect(etherTx.toJSON()).toEqual(JSON.stringify(etherTx.__getTX()))
+});
+
+test('Test convert EtherContractTx to JSON', async () => {
+  const etherTx = new transactions.EtherContractTx();
+  etherTx.to = '0x000000000000000000000000000000000';
+  etherTx.data = '0x1111';
+  etherTx.gasPrice = ethers.utils.bigNumberify(1000000000);
+  etherTx.gasLimit = ethers.utils.bigNumberify(21000);
+  etherTx.value = ethers.utils.parseEther('0.001');
+  etherTx.nonce = 1;
+
+  expect(etherTx.toJSON()).toEqual(JSON.stringify(etherTx.__getTX()))
+});
+
 test('Test create unspent BitcoinTx', async () => {
   const bitcoinTx = new transactions.BitcoinTx();
 
@@ -40,6 +68,19 @@ test('Test create unspent BitcoinTx', async () => {
 test('Test convert to JSON empty unspent BitcoinTx', async () => {
   const bitcoinTx = new transactions.BitcoinTx();
   expect(bitcoinTx.isCompleted()).not.toBeTruthy();
+});
+
+test('Test convert BitcoinTx to JSON', async() => {
+  const bitcoinTx = new transactions.BitcoinTx();
+  bitcoinTx.to = ['0x000000000000000000000000000000000'];
+  bitcoinTx.from = ['0x000000000000000000000000000000000'];
+  bitcoinTx.amounts = [1000, 10000];
+  bitcoinTx.changeAddress = '0x000000000000000000000000000000000';
+  bitcoinTx.change = 10000;
+  bitcoinTx.fee = 100;
+  bitcoinTx.inputs = [{'fake': 'input'}];
+
+  expect(bitcoinTx.toJSON()).toEqual(JSON.stringify(bitcoinTx.__getTX()))
 });
 
 test('Test build ether transaction', async () => {
@@ -67,6 +108,7 @@ test('Test fail build ether transaction', async () => {
 
   expect(builder.getResult().isCompleted()).not.toBeTruthy();
 });
+
 
 test('Test build bitcoin transaction', async () => {
   const outx = {

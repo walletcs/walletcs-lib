@@ -327,6 +327,7 @@ class TransactionConstructor {
 module.exports = {
   EtherTx,
   BitcoinTx,
+  EtherContractTx,
   EtherTxBuilder,
   BitcoinTxBuilder,
   EtherContractTxBuilder,
