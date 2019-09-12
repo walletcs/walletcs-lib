@@ -5,7 +5,7 @@ const structures = require('./base/structures');
 const transactions = require('./transactions');
 
 const FILES_TYPES = {
-  ether: 'ETHFileTX',
+  ether: 'ETHFileTx',
   bitcoin: 'BTCFileTx',
   unknown: 'unknown'
 };
@@ -64,17 +64,22 @@ class JSONParser extends parsers.FileParserInterface {
   }
 
   static getType(file){
-    const data = JSON.parse(file);
-    const sortedKeys = Object.keys(data).sort();
-    if (_.isEqual(sortedKeys, Object.keys(structures.BitcoinFileTransaction).sort())){
-      return FILES_TYPES.bitcoin;
-    }
+    try{
+      const data = JSON.parse(file);
+      const sortedKeys = Object.keys(data).sort();
+      if (_.isEqual(sortedKeys, Object.keys(structures.BitcoinFileTransaction).sort())){
+        return FILES_TYPES.bitcoin;
+      }
 
-    if (_.isEqual(sortedKeys, Object.keys(structures.EtherFileTransaction).sort())){
-      return FILES_TYPES.ether;
-    }
+      if (_.isEqual(sortedKeys, Object.keys(structures.EtherFileTransaction).sort())){
+        return FILES_TYPES.ether;
+      }
 
+    }catch (e) {
+      console.log(e);
+    }
     return FILES_TYPES.unknown;
+
   }
 
   static __isContractStructure(data){

@@ -1,5 +1,6 @@
 const parsers = require('../parsers');
 const structures = require('../base/structures');
+const errors = require('../base/errors');
 const ethers = require('ethers');
 const _ = require('lodash');
 
@@ -60,7 +61,7 @@ test('Test parser ether mixed file', async() => {
 test('Test for empty file', async () => {
   expect(() => {
       parsers.JSONParser.parseFile('');
-  }).toThrow();
+  }).toThrowError(errors.PARSING_ERROR);
   expect(parsers.JSONParser.getType('')).toEqual('unknown');
 });
 
@@ -70,7 +71,7 @@ test('Test parsing not filled ether file out ', async () => {
   const typeFile = parsers.JSONParser.getType(JSON.stringify(emptyEtherFile));
   expect(_.isArray(result)).toBeTruthy();
   expect(result.length).toEqual(0);
-  expect(typeFile).toEqual('ETHFileTX');
+  expect(typeFile).toEqual('ETHFileTx');
 });
 
 test('Test parsing not filled bitcoin file out', async ()=> {
@@ -79,5 +80,5 @@ test('Test parsing not filled bitcoin file out', async ()=> {
   const typeFile = parsers.JSONParser.getType(JSON.stringify(emptyBitcoinFileTx));
   expect(_.isArray(result)).toBeTruthy();
   expect(result.length).toEqual(0);
-  expect(typeFile).toEqual('BTCFileTX');
+  expect(typeFile).toEqual('BTCFileTx');
 });

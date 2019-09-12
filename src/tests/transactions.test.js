@@ -1,5 +1,6 @@
 const transactions = require('../transactions');
 const structures = require('../base/structures');
+const errors = require('../base/errors');
 const ethers = require('ethers');
 const bitcore = require('bitcore-lib');
 "use strict";
@@ -21,17 +22,7 @@ test('Test create empty unspent EtherTx', async () => {
 
 test('Test convert to JSON empty unspent EtherTx', async () => {
    const etherTx = new transactions.EtherTx();
-   const stringRepr = etherTx.toJSON();
-   const expected = JSON.stringify( {
-      to: '',
-      value: 0,
-      gasPrice: 0,
-      gasLimit: 0,
-      data: '0x',
-      nonce: 0
-    });
-
-   expect(stringRepr).toEqual(expected);
+   expect(etherTx.isCompleted()).not.toBeTruthy();
 });
 
 test('Test create unspent BitcoinTx', async () => {
@@ -48,20 +39,10 @@ test('Test create unspent BitcoinTx', async () => {
 
 test('Test convert to JSON empty unspent BitcoinTx', async () => {
   const bitcoinTx = new transactions.BitcoinTx();
-  const stringRepr = bitcoinTx.toJSON();
-  const expected = JSON.stringify({
-      to: [],
-      from: [],
-      amounts: [],
-      inputs: [],
-      change: 0,
-      fee: 0,
-      changeAddress: ''
-  });
-  expect(stringRepr).toEqual(expected);
+  expect(bitcoinTx.isCompleted()).not.toBeTruthy();
 });
 
-test('Test build Ether transaction', async () => {
+test('Test build ether transaction', async () => {
   const builder = new transactions.EtherTxBuilder('rinkeby');
   builder.setToAddress(ETHER_ADDRESS);
   builder.setAmount(2);
@@ -74,10 +55,20 @@ test('Test build Ether transaction', async () => {
   expect(transaction.to).toEqual(ETHER_ADDRESS);
   expect(transaction.value).toEqual(ethers.utils.parseEther('2'));
   expect(transaction.gasLimit).toEqual(ethers.utils.bigNumberify(21000));
-  expect(transaction.gasPrice).toEqual(ethers.utils.bigNumberify((1000000000)));
+  expect(transaction.gasPrice).toEqual(ethers.utils.bigNumberify(1000000000));
 });
 
-test('Test build Bitcoin transaction', async () => {
+test('Test fail build ether transaction', async () => {
+  const builder = new transactions.EtherTxBuilder('rinkeby');
+  builder.setToAddress(ETHER_ADDRESS);
+  builder.setNonce(1);
+  builder.setGasPrice(1000000000);
+  builder.setGasLimit(21000);
+
+  expect(builder.getResult().isCompleted()).not.toBeTruthy();
+});
+
+test('Test build bitcoin transaction', async () => {
   const outx = {
     txId: '557bf23415160ce932ea5215e238132bf1cc42c1a7f91846d335d0d1e33cd19f',
     address: BITCOIN_ADDRESS,
@@ -109,7 +100,7 @@ test('Test build Bitcoin transaction', async () => {
 
 });
 
-test('Test build Bitcoin transaction with array params', async () => {
+test('Test build bitcoin transaction with array params', async () => {
   const outx = {
     txId: '557bf23415160ce932ea5215e238132bf1cc42c1a7f91846d335d0d1e33cd19f',
     address: BITCOIN_ADDRESS,
@@ -138,7 +129,7 @@ test('Test build Bitcoin transaction with array params', async () => {
 
 });
 
-test('Test build Ether contract tx', async () => {
+test('Test build ether contract tx', async () => {
   const builder = new transactions.EtherContractTxBuilder();
   builder.setToAddress(ETHER_ADDRESS);
   builder.setMethodName('test');
@@ -157,7 +148,19 @@ test('Test build Ether contract tx', async () => {
   expect(transaction.data).toEqual('0x1');
 });
 
-test('Test Ether director builder', async () => {
+test('Test fail build ether contract tx', async () => {
+  const builder = new transactions.EtherContractTxBuilder();
+  builder.setToAddress(ETHER_ADDRESS);
+  builder.setMethodName('test');
+  builder.setMethodParams([]);
+  builder.setNonce(1);
+  builder.setGasPrice(1000000000);
+  builder.setGasLimit(21000);
+
+  expect(builder.getResult().isCompleted()).not.toBeTruthy();
+});
+
+test('Test ether director builder', async () => {
   const rawTx = structures.EtherTransaction;
   rawTx.nonce = 1;
   rawTx.gasLimit = 21000;

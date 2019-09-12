@@ -1,6 +1,7 @@
 require('babel-polyfill');
 const transactions = require('./base/transactions');
 const structures = require('./base/structures');
+const errors = require('./base/errors');
 const _ = require('lodash');
 const ethers = require('ethers');
 const bitcore = require('bitcore-lib');
@@ -57,6 +58,7 @@ class EtherTx extends transactions.EtherUnsignedTxInterface {
   }
 
   toJSON() {
+    if (!this.isCompleted()) throw Error(errors.BUILD_TX_ERROR);
     return JSON.stringify(this.__getTX())
   }
 
@@ -120,7 +122,12 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
   }
 
   toJSON() {
+    if (!this.isCompleted()) throw Error(errors.BUILD_TX_ERROR);
     return JSON.stringify(this.__getTX())
+  }
+
+  getTx() {
+    return this.__getTX();
   }
 }
 

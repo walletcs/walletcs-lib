@@ -7,6 +7,7 @@ const bip32 = require('bip32');
 const bitcoinjs = require('bitcoinjs-lib');
 const bitcore = require('bitcore-lib');
 const walletcs = require('./base/walletc');
+const errors = require('./base/errors');
 const _ = require('lodash');
 
 const DEEP_SEARCH = 1000;
@@ -73,56 +74,70 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
   }
 
   __builtTx(unsignedTx){
-    const tx = new bitcore.Transaction();
-    tx.from(unsignedTx.inputs);
-    const addresses = _.zipWith(unsignedTx.to, unsignedTx.amounts,
-      function (to, amount) {
-        return {'address': to, 'satoshis': amount};
-    });
-    tx.to(addresses);
-    tx.change(unsignedTx.changeAddress);
-    tx.fee(tx.getFee());
-
-    return tx;
+    try {
+      const tx = new bitcore.Transaction();
+      tx.from(unsignedTx.inputs);
+      const addresses = _.zipWith(unsignedTx.to, unsignedTx.amounts,
+        function (to, amount) {
+          return {'address': to, 'satoshis': amount};
+      });
+      tx.to(addresses);
+      tx.change(unsignedTx.changeAddress);
+      tx.fee(tx.getFee());
+      return tx;
+    }catch (e) {
+      throw Error(errors.TX_FORMAT)
+    }
   }
 
   async getFromMnemonic(mnemonic) {
-    if (!bip39.validateMnemonic(mnemonic)) throw Error('Not valid mnemonic.');
+    if (!bip39.validateMnemonic(mnemonic)) throw Error(errors.MNEMONIC);
     const seed = await bip39.mnemonicToSeed(mnemonic);
     const root = bip32.fromSeed(seed, this.network);
     return {'xPub': root.neutered().toBase58(), 'xPriv': root.toBase58()} // xPub, xPriv
   }
 
   // BIP32
-  getAddressFromXpub(xpub, number_address) {
+  getAddressFromXpub(xpub, index) {
     // Use BIP32 method for get child key
-    const address = bitcoinjs.payments.p2pkh({
-      pubkey: bip32.fromBase58(xpub, this.network).derive(0).derive(number_address).publicKey,
-      network: this.network
-    }).address;
+    try{
+      const address = bitcoinjs.payments.p2pkh({
+        pubkey: bip32.fromBase58(xpub, this.network).derive(0).derive(parseInt(index)).publicKey,
+        network: this.network
+      }).address;
+      return address
 
-    return address
+    }catch (e) {
+      throw Error(errors.XPUB)
+    }
   };
 
-  getxPubFromXprv(xprv) {
-    const node = bip32.fromBase58(xprv, this.network);
+  getxPubFromXprv(xpriv) {
+    try{
+      const node = bip32.fromBase58(xpriv, this.network);
 
-    return node.neutered().toBase58();
+      return node.neutered().toBase58();
+    }catch (e) {
+      throw Error(errors.XPRIV)
+    }
   }
 
-  getAddressWithPrivateFromXprv(xprv, number_address) {
+  getAddressWithPrivateFromXprv(xpriv, number_address) {
     // Use BIP32 method for get child key
-    const root = bip32.fromBase58(xprv, this.network);
-    const child1b = root
+    try{
+      const root = bip32.fromBase58(xpriv, this.network);
+      const child1b = root
       .derive(0)
       .derive(number_address);
-    return {'address': getAddress(child1b, this.network), 'privateKey': child1b.toWIF()}
-
+      return {'address': getAddress(child1b, this.network), 'privateKey': child1b.toWIF()}
+    }catch (e) {
+      throw Error(errors.XPRIV)
+    }
   };
 
-  searchAddressInParent(xprv, address, deep) {
+  searchAddressInParent(xpriv, address, deep) {
     for (let i = 0; i < deep || DEEP_SEARCH; i += 1) {
-      let pair = this.getAddressWithPrivateFromXprv(xprv, i);
+      let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
         return pair
       }
@@ -132,7 +147,11 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
 
   async signTransactionByPrivateKey(prv, unsignedTx){
     const tx = this.__builtTx(unsignedTx);
-    tx.sign(new bitcore.PrivateKey(prv));
+    try{
+        tx.sign(new bitcore.PrivateKey(prv));
+    }catch (e) {
+      throw Error(errors.PRIVATE_KEY);
+    }
     return tx.serialize()
   }
 
@@ -163,32 +182,42 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   }
 
   __builtTx(unsignedTx) {
-    return unsignedTx.getTx();
+    const tx = unsignedTx.getTx();
+    if (!tx) throw (errors.TX_FORMAT);
+    return tx;
   }
 
   getFromMnemonic (mnemonic) {
-    ethers.utils.HDNode.isValidMnemonic(mnemonic);
+    if(!ethers.utils.HDNode.isValidMnemonic(mnemonic)) throw Error(errors.MNEMONIC);
     const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
     return {'xPub': node.neuter().extendedKey, 'xPrv': node.extendedKey} // returns xPub xPrv
   }
 
-  getAddressWithPrivateFromXprv(xprv, number_address) {
+  getAddressWithPrivateFromXprv(xpriv, number_address) {
     // Use BIP32 method for get child key
-    const root = ethers.utils.HDNode.fromExtendedKey(xprv);
-    const standardEthereum = root.derivePath(`0/${number_address || 0}`);
-    return {'address': standardEthereum.address, 'privateKey': standardEthereum.privateKey}
+    try {
+      const root = ethers.utils.HDNode.fromExtendedKey(xpriv);
+      const standardEthereum = root.derivePath(`0/${number_address || 0}`);
+      return {'address': standardEthereum.address, 'privateKey': standardEthereum.privateKey}
+    }catch (e) {
+      throw Error(errors.XPRIV)
+    }
   };
 
   getAddressFromXpub(xpub, number_address) {
     // Use BIP32 method for get child key
-    const root = ethers.utils.HDNode.fromExtendedKey(xpub);
-    const standardEthereum = root.derivePath(`0/${number_address || 0}`);
-    return standardEthereum.address
+    try{
+      const root = ethers.utils.HDNode.fromExtendedKey(xpub);
+      const standardEthereum = root.derivePath(`0/${number_address || 0}`);
+      return standardEthereum.address
+    }catch (e) {
+      throw Error(errors.XPUB)
+    }
   }
 
-  searchAddressInParent(xprv, address, deep) {
+  searchAddressInParent(xpriv, address, deep) {
     for (let i = 0; i < deep || DEEP_SEARCH; i += 1) {
-      let pair = this.getAddressWithPrivateFromXprv(xprv, i);
+      let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
         return pair
       }
@@ -198,8 +227,12 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
 
   async signTransactionByPrivateKey(prv, unsignedTx){
     const tx = this.__builtTx(unsignedTx);
-    const wallet = new ethers.Wallet(prv);
-    return await wallet.sign(tx);
+    try{
+      const wallet = new ethers.Wallet(prv);
+      return await wallet.sign(tx);
+    }catch (e) {
+      throw Error(errors.PRIVATE_KEY)
+    }
   }
 
   async signTransactionByxPriv(xpriv, unsignedTx, addresses) {
