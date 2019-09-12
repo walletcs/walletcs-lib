@@ -39,7 +39,13 @@ class EtherTx extends transactions.EtherUnsignedTxInterface {
     this.nonce = 0;
   }
 
+  isCompleted(){
+    return this.to && this.value && ethers.utils.bigNumberify(this.gasLimit) && ethers.utils.bigNumberify(this.gasPrice)
+  }
+
   __getTX() {
+    if (!this.isCompleted()) return null;
+
     return {
       to: this.to,
       value: this.value,
@@ -66,7 +72,13 @@ class EtherContractTx extends EtherTx {
     this.methodParams = [];
   }
 
+  isCompleted(){
+    return this.to && this.value && ethers.utils.bigNumberify(this.gasLimit) && ethers.utils.bigNumberify(this.gasPrice) && this.data !== '0x';
+  }
+
+
   __getTX() {
+    if (!this.isCompleted()) return null;
     return {
       to: this.to,
       gasPrice: this.gasPrice.toNumber(),
@@ -90,7 +102,12 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
     this.changeAddress = '';
   }
 
+  isCompleted(){
+    return this.to.length && this.from.length && this.amounts.length && this.inputs.length && this.fee && this.changeAddress;
+  }
+
   __getTX() {
+    if (!this.isCompleted()) return null;
     return {
       to: this.to,
       from: this.from,
@@ -189,15 +206,19 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
 
   calculateFee(fee){
     if (!fee) {
-      const tx = new bitcore.Transaction();
-      const addresses = _.zipWith(this.transaction.to, this.transaction.amounts,
-        function (to, amount) {
-          return {'address': to, 'satoshis': amount};
-      });
-      tx.to(addresses);
-      tx.from(this.transaction.inputs);
-      tx.change(this.transaction.changeAddress);
-      this.transaction.fee = tx.getFee();
+      try {
+        const tx = new bitcore.Transaction();
+        const addresses = _.zipWith(this.transaction.to, this.transaction.amounts,
+          function (to, amount) {
+            return {'address': to, 'satoshis': amount};
+          });
+        tx.to(addresses);
+        tx.from(this.transaction.inputs);
+        tx.change(this.transaction.changeAddress);
+        this.transaction.fee = tx.getFee();
+      }catch (e) {
+        console.log('Warning fee calculation: ', e);
+      }
     }else{
       this.transaction.fee = convertToSatoshi(fee)
     }

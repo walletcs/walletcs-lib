@@ -15,7 +15,7 @@ class JSONParser extends parsers.FileParserInterface {
   static parseFile(file) {
     try {
       const data = JSON.parse(file);
-      const typeFile = JSONParser.getType(data);
+      const typeFile = JSONParser.getType(file);
 
       if (typeFile === FILES_TYPES.unknown) throw Error(errors.PARSING_ERROR);
 
@@ -51,7 +51,7 @@ class JSONParser extends parsers.FileParserInterface {
         const builder = new transactions.BitcoinTxBuilder();
         const director = new transactions.TransactionConstructor(builder);
         const tx = director.buildBitcoinTx(data.outx, data.from, data.to, data.amount, data.changeAddress);
-        result.push(tx);
+        if (tx) result.push(tx);
 
       }
 
@@ -63,7 +63,8 @@ class JSONParser extends parsers.FileParserInterface {
     }
   }
 
-  static getType(data){
+  static getType(file){
+    const data = JSON.parse(file);
     const sortedKeys = Object.keys(data).sort();
     if (_.isEqual(sortedKeys, Object.keys(structures.BitcoinFileTransaction).sort())){
       return FILES_TYPES.bitcoin;

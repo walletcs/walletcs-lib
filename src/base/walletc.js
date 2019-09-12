@@ -13,7 +13,7 @@ class BIP32Interface {
     errors.errorNotImplementedInterface();
   }
 
-  searchAddressInParent(xprv, address, deep) {
+  searchAddressInParent(xprv, address, depth) {
     errors.errorNotImplementedInterface();
   }
 }
