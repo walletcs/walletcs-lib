@@ -63,7 +63,6 @@ test('Test convert to JSON empty unspent BitcoinTx', async () => {
 
 test('Test build Ether transaction', async () => {
   const builder = new transactions.EtherTxBuilder('rinkeby');
-  builder.setFromAddress(ETHER_ADDRESS);
   builder.setToAddress(ETHER_ADDRESS);
   builder.setAmount(2);
   builder.setNonce(1);
@@ -73,7 +72,7 @@ test('Test build Ether transaction', async () => {
   const transaction = builder.getResult();
   expect(transaction.nonce).toEqual(1);
   expect(transaction.to).toEqual(ETHER_ADDRESS);
-  expect(transaction.value).toEqual(2);
+  expect(transaction.value).toEqual(ethers.utils.parseEther('2'));
   expect(transaction.gasLimit).toEqual(ethers.utils.bigNumberify(21000));
   expect(transaction.gasPrice).toEqual(ethers.utils.bigNumberify((1000000000)));
 });
@@ -142,7 +141,6 @@ test('Test build Bitcoin transaction with array params', async () => {
 test('Test build Ether contract tx', async () => {
   const builder = new transactions.EtherContractTxBuilder();
   builder.setToAddress(ETHER_ADDRESS);
-  builder.setAmount(2);
   builder.setMethodName('test');
   builder.setMethodParams([]);
   builder.setData('0x1');
@@ -174,7 +172,7 @@ test('Test Ether director builder', async () => {
 
   expect(transaction.nonce).toEqual(1);
   expect(transaction.to).toEqual(ETHER_ADDRESS);
-  expect(transaction.value).toEqual(2);
+  expect(transaction.value).toEqual(ethers.utils.parseEther('2'));
   expect(transaction.gasLimit).toEqual(ethers.utils.bigNumberify(21000));
   expect(transaction.gasPrice).toEqual(ethers.utils.bigNumberify((1000000000)));
 });

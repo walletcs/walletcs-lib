@@ -25,7 +25,8 @@ class JSONParser extends parsers.FileParserInterface {
           let builder = null;
           let director = null;
           let createdTx = null;
-
+          console.log(typeFile);
+          console.log(tx);
           if(JSONParser.__isEtherStructure(tx)){
             builder = new transactions.EtherTxBuilder();
             director = new transactions.TransactionConstructor(builder);
@@ -38,6 +39,7 @@ class JSONParser extends parsers.FileParserInterface {
             });
             createdTx = director.buildEtherContractTx(tx, contract[0].abi);
           }else{
+            console.log(e);
             throw Error(errors.PARSING_ERROR);
           }
           result.push(createdTx);

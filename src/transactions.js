@@ -118,7 +118,7 @@ class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
   }
 
   setAmount(amount) {
-    this.transaction.value =  ethers.utils.parseEther(amount || 0);
+    this.transaction.value =  ethers.utils.parseEther(amount.toString() || '0');
   }
 
   setNonce(nonce) {
@@ -273,7 +273,6 @@ class TransactionConstructor {
   }
 
   buildEtherTx(transaction){
-    this.builder.setFromAddress(transaction.from);
     this.builder.setToAddress(transaction.to);
     this.builder.setAmount(transaction.value);
     this.builder.setNonce(transaction.nonce);

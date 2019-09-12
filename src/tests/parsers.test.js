@@ -3,9 +3,9 @@ const structures = require('../base/structures');
 const ethers = require('ethers');
 
 const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":10000}],"from":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"to":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"amount":[10000,110000], "changeAddress": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "fee": null};
-const etherFileTx = {"pubKey":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value":"1","data":"0x", "from": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}],"contracts":[]};
+const etherFileTx = {"pubKey":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value":"1","data":"0x"}],"contracts":[]};
 const etherContractFileTx = {"pubKey":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3", "data":"0x1" }],"contracts":[{'address': '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3', 'abi': []}]};
-const mixedEtherFileTx = {"pubKey":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value":"1","data":"0x", "from": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}, {"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3", "data":"0x1" }],"contracts":[{'address': '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3', 'abi': []}]};
+const mixedEtherFileTx = {"pubKey":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3","value":"1","data":"0x"}, {"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":"0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3", "data":"0x1" }],"contracts":[{'address': '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3', 'abi': []}]};
 
 test('Test parser bitcoin file tx', async () => {
   const result = parsers.JSONParser.parseFile(JSON.stringify(bitcoinFileTx));
@@ -22,8 +22,7 @@ test('Test parser ether file tx', async() => {
   const result = parsers.JSONParser.parseFile(JSON.stringify(etherFileTx));
 
   expect(result[0].to).toEqual('0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3');
-  expect(result[0].from).toEqual('0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3');
-  expect(result[0].value).toEqual(1);
+  expect(result[0].value).toEqual(ethers.utils.parseEther('1'));
   expect(result[0].gasLimit).toEqual(ethers.utils.bigNumberify(21000));
   expect(result[0].gasPrice).toEqual(ethers.utils.bigNumberify({"_hex":"0x3b9aca00"}));
   expect(result[0].nonce).toEqual(32);
@@ -50,8 +49,7 @@ test('Test parser ether mixed file', async() => {
   expect(result[1].data).toEqual('0x1');
 
   expect(result[0].to).toEqual('0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3');
-  expect(result[0].from).toEqual('0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3');
-  expect(result[0].value).toEqual(1);
+  expect(result[0].value).toEqual(ethers.utils.parseEther('1'));
   expect(result[0].gasLimit).toEqual(ethers.utils.bigNumberify(21000));
   expect(result[0].gasPrice).toEqual(ethers.utils.bigNumberify({"_hex":"0x3b9aca00"}));
   expect(result[0].nonce).toEqual(32);
