@@ -1,6 +1,6 @@
 {
   "name": "walletcs",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "scripts": {
     "test": "jest",
     "compile": "babel src --out-dir lib"
@@ -27,7 +27,7 @@
     "bitcore-lib": "^8.6.0",
     "ethers": "^4.0.25",
     "extends-classes": "^1.0.5",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.15q",
     "papaparse": "^5.0.0",
     "web3": "^1.0.0"
   },
@@ -35,7 +35,7 @@
     "babel-core": "7.0.0-bridge.0"
   },
   "description": "Works with ethereum transactions",
-  "main": "src/index",
+  "main": "lib/index",
   "typings": "types/index",
   "directories": {
     "test": "src/ether/tests"
