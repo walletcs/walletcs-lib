@@ -1,9 +1,12 @@
+require("@babel/register");
+
 const Outx = {
   address: '',        // String
   satoshis: 0,         // Integer
   txId: '',           // String
   outputIndex: '',    // String
 };
+
 
 const EtherTransaction = {
   to: '',             // String

@@ -1,3 +1,6 @@
+require('babel-polyfill');
+require("@babel/register");
+
 const errors = require('./errors');
 
 class BIP32Interface {

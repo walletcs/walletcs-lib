@@ -1,4 +1,6 @@
 require('babel-polyfill');
+require("@babel/register");
+
 const transactions = require('./base/transactions');
 const structures = require('./base/structures');
 const errors = require('./base/errors');

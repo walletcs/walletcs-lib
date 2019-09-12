@@ -70,7 +70,7 @@ test('Test sign ether transaction by xPriv', async () => {
   const sinedTx = await wallet.signTransactionByPrivateKey(child1.privateKey, tx);
   const xprvSinedTx = await wallet.signTransactionByxPriv(xprv, tx, child1.address);
 
-  expect(xprvSinedTx).toEqual(sinedTx);
+  expect(sinedTx).toEqual(xprvSinedTx);
 
 });
 
