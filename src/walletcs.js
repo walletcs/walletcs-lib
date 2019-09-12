@@ -1,5 +1,3 @@
-require("babel-core/register");
-require("babel-polyfill");
 const ethers = require('ethers');
 const bip39 = require ('bip39');
 const bip32 = require('bip32');
