@@ -1,6 +1,6 @@
 {
   "name": "walletcs",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "scripts": {
     "test": "jest",
     "compile": "babel src --out-dir lib"
@@ -49,7 +49,7 @@
   ],
   "files": [
     "src",
-    "src/ether"
+    "lib"
   ],
   "author": "Denys Rozlomii",
   "license": "Apache-2.0",
