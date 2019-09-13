@@ -88,7 +88,7 @@ class EtherContractTx extends EtherTx {
       gasPrice: this.gasPrice.toNumber(),
       gasLimit: this.gasLimit.toNumber(),
       data: this.data,
-      nonce: this.nonce
+      nonce: this.nonce,
     }
   }
 
