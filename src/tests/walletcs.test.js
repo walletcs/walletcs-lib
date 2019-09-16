@@ -239,3 +239,8 @@ test('Test create multisign address', async() =>{
 
   expect(multiSignAddress).not.toEqual('39vQqW5Ykt5C66FfV2J6UApUEkLkcAKuqj');
 });
+
+
+test('Test create multisign tx', async () => {
+
+});

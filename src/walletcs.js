@@ -7,7 +7,7 @@ const walletcs = require('./base/walletc');
 const errors = require('./base/errors');
 const _ = require('lodash');
 
-const DEEP_SEARCH = 1000;
+const SEARCH_DEPTH = 1000;
 
 function _chooseNetwork(network)
     // Choose between two networks testnet and main
@@ -166,8 +166,8 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     }
   };
 
-  searchAddressInParent(xpriv, address, deep) {
-    for (let i = 0; i < deep || DEEP_SEARCH; i += 1) {
+  searchAddressInParent(xpriv, address, depth) {
+    for (let i = 0; i < depth || SEARCH_DEPTH; i += 1) {
       let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
         return pair
@@ -246,8 +246,8 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
     }
   }
 
-  searchAddressInParent(xpriv, address, deep) {
-    for (let i = 0; i < deep || DEEP_SEARCH; i += 1) {
+  searchAddressInParent(xpriv, address, depth) {
+    for (let i = 0; i < depth || SEARCH_DEPTH; i += 1) {
       let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
         return pair
@@ -267,9 +267,11 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   }
 
   async signTransactionByxPriv(xpriv, unsignedTx, addresses) {
-      const pair = this.searchAddressInParent(xpriv, addresses);
-      if (pair) {
-       return await this.signTransactionByPrivateKey(pair.privateKey, unsignedTx)
+      for (let i=0; i < addresses.length; i += 1){
+        const pair = this.searchAddressInParent(xpriv, addresses);
+        if (pair) {
+         return await this.signTransactionByPrivateKey(pair.privateKey, unsignedTx)
+        }
       }
     return null
   }

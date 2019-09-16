@@ -42,7 +42,6 @@ class JSONParser extends parsers.FileParserInterface {
             });
             createdTx = director.buildEtherContractTx(tx, contract[0].abi);
           }else{
-            console.log(e);
             throw Error(errors.PARSING_ERROR);
           }
           result.push(createdTx);
@@ -57,11 +56,8 @@ class JSONParser extends parsers.FileParserInterface {
         if (tx) result.push(tx);
 
       }
-
       return result;
-      
     }catch (e) {
-      console.log(e);
       throw Error(errors.PARSING_ERROR)
     }
   }
@@ -77,11 +73,10 @@ class JSONParser extends parsers.FileParserInterface {
       if (_.isEqual(sortedKeys, Object.keys(structures.EtherFileTransaction).sort())){
         return FILES_TYPES.ether;
       }
-
+      return FILES_TYPES.unknown;
     }catch (e) {
-      console.log(e);
+      return FILES_TYPES.unknown;
     }
-    return FILES_TYPES.unknown;
 
   }
 

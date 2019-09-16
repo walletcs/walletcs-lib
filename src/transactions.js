@@ -220,21 +220,21 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
   }
 
   calculateFee(fee){
-    if (!fee) {
+    if (!fee && this.transaction.to.length && this.transaction.amounts.length) {
       try {
         const tx = new bitcore.Transaction();
-        const addresses = _.zipWith(this.transaction.to, this.transaction.amounts,
+        tx.to(_.zipWith(this.transaction.to, this.transaction.amounts,
           function (to, amount) {
             return {'address': to, 'satoshis': amount};
-          });
-        tx.to(addresses);
+          }));
         tx.from(this.transaction.inputs);
         tx.change(this.transaction.changeAddress);
         this.transaction.fee = tx.getFee();
       }catch (e) {
         console.log('Warning fee calculation: ', e);
       }
-    }else{
+    }
+    if (fee) {
       this.transaction.fee = convertToSatoshi(fee)
     }
   }
