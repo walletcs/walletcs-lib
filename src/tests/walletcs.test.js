@@ -3,6 +3,7 @@ const transactions = require('../transactions');
 const parsers = require('../parsers');
 const errors = require('../base/errors');
 const ethers = require('ethers');
+const bitcore = require('bitcore-lib');
 
 test('Test create ether pair keys from mnemonic',  async () => {
   const wallet = new wallets.EtherWalletHD();
@@ -222,4 +223,19 @@ test('Test create ether address/PrivateKey with bad privateKey', async () => {
   await expect(wallet.signTransactionByPrivateKey(child1.privateKey + '1', tx)
   ).rejects.toThrowError(errors.PRIVATE_KEY);
 
+});
+
+test('Test create multisign address', async() =>{
+  const network = 'test3';
+  const wallet = new wallets.BitcoinWalletHD(network);
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPriv;
+  const pair1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
+  const pair2 = wallet.getAddressWithPrivateFromXprv(xprv, 1);
+  const publicKeys = [pair2.privateKey, pair1.privateKey].map(function (key) {
+    return wallets.BitcoinWalletHD.getPublicKeyFromPrivateKey(key);
+  });
+  const multiSignAddress = wallets.BitcoinWalletHD.createMultiSignAddress(2, 'main', publicKeys);
+
+  expect(multiSignAddress).not.toEqual('39vQqW5Ykt5C66FfV2J6UApUEkLkcAKuqj');
 });

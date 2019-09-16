@@ -9,7 +9,7 @@ const _ = require('lodash');
 
 const DEEP_SEARCH = 1000;
 
-const _chooseNetwork = (network) =>
+function _chooseNetwork(network)
     // Choose between two networks testnet and main
 {
   if (!network && (network !== 'test3' || network !== 'main')) {
@@ -22,6 +22,11 @@ const _chooseNetwork = (network) =>
     return bitcoinjs.networks.bitcoin
   }
 };
+
+function _convertNetworkBitcoinjsToBitcore(network){
+  if (network === 'test3') return 'testnet';
+  return 'livenet'
+}
 
 function getAddress (node, network) {
   return bitcoinjs.payments.p2pkh({ pubkey: node.publicKey, network }).address
@@ -70,10 +75,39 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     return bip39.validateMnemonic(mnemonic);
   }
 
+  static createMultiSignAddress (required, network, addresses){
+    const address = new bitcore.Address(addresses, required, _convertNetworkBitcoinjsToBitcore(network));
+    return address.toString();
+  }
+
+  static getPublicKeyFromPrivateKey(privateKey){
+    const publicKey = bitcore.PublicKey(bitcore.PrivateKey(privateKey));
+    return publicKey.toString();
+  }
+
+  static getSignatures(signedTx, privateKey){
+    const tx = new bitcore.Transaction(signedTx);
+    return tx.getSignatures(privateKey);
+  }
+
+  combineMultiSignSignatures(unsignedTx, signatures) {
+    const tx = this.__builtTx(unsignedTx);
+    _.each(signatures, function (signature) {
+      _.each(signature, function (sign) {
+        tx.addSignature(sign);
+      })
+    });
+    return tx.serialize();
+  }
+
   __builtTx(unsignedTx){
     try {
       const tx = new bitcore.Transaction();
-      tx.from(unsignedTx.inputs);
+      if(unsignedTx.threshold){
+        tx.from(unsignedTx.inputs, unsignedTx.from, unsignedTx.threshold)
+      }else{
+        tx.from(unsignedTx.inputs);
+      }
       const addresses = _.zipWith(unsignedTx.to, unsignedTx.amounts,
         function (to, amount) {
           return {'address': to, 'satoshis': amount};

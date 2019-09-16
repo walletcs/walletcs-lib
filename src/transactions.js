@@ -104,6 +104,7 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
     this.change = 0;
     this.fee = 0;
     this.changeAddress = '';
+    this.threshold = 0;
   }
 
   isCompleted(){
@@ -119,7 +120,8 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
       inputs: this.inputs,
       change: this.change,
       fee: this.fee,
-      changeAddress: this.changeAddress
+      changeAddress: this.changeAddress,
+      threshold: this.threshold
     }
   }
 
@@ -179,6 +181,10 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
     else{
       this.transaction.from.push(address);
     }
+  }
+
+  setThreshold(threshold){
+    this.transaction.threshold = threshold;
   }
 
   setToAddress(address){
@@ -322,6 +328,25 @@ class TransactionConstructor {
     this.builder.setMethodName(methodData ? methodData.name : null);
     this.builder.setMethodParams(methodData ? methodData.params : []);
     return this.builder.getResult();
+  }
+
+  buildBitcoinMultiSignTx(outxs, from, to, amounts, changeAddress, fee, threshold){
+    this.builder.setFromAddress(from);
+    this.builder.setToAddress(to);
+    this.builder.setAmount(amounts);
+    this.builder.setThreshold(threshold);
+    const self = this;
+    if (_.isArray(outxs)){
+      _.each(outxs, function (outx) {
+        self.builder.addOutx(outx);
+      })
+    }
+    else{
+      this.builder.addOutx(outxs);
+    }
+    this.builder.setChangeAddress(changeAddress);
+    this.builder.calculateFee(fee);
+    return this.builder.getResult()
   }
 }
 
