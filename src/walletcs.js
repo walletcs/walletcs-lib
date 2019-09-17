@@ -197,10 +197,10 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     return tx.serialize()
   }
 
-  async signTransactionByxPriv(xpriv, unsignedTx, addresses) {
+  async signTransactionByxPriv(xpriv, unsignedTx, addresses, depth) {
     const tx = this.__builtTx(unsignedTx);
     for(let i = 0; i < addresses.length; i += 1){
-      const pair = this.searchAddressInParent(xpriv, addresses[i]);
+      const pair = this.searchAddressInParent(xpriv, addresses[i], depth);
       if (pair) {
         tx.sign(new bitcore.PrivateKey(pair.privateKey));
       }
@@ -235,7 +235,7 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
     return tx;
   }
 
-  getFromMnemonic (mnemonic) {
+  async getFromMnemonic (mnemonic) {
     if(!ethers.utils.HDNode.isValidMnemonic(mnemonic)) throw Error(errors.MNEMONIC);
     const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
     return {'xPub': node.neuter().extendedKey, 'xPriv': node.extendedKey} // returns xPub xPriv
@@ -283,9 +283,9 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
     }
   }
 
-  async signTransactionByxPriv(xpriv, unsignedTx, addresses) {
+  async signTransactionByxPriv(xpriv, unsignedTx, addresses, depth) {
       for (let i=0; i < addresses.length; i += 1){
-        const pair = this.searchAddressInParent(xpriv, addresses);
+        const pair = this.searchAddressInParent(xpriv, addresses[i], depth);
         if (pair) {
          return await this.signTransactionByPrivateKey(pair.privateKey, unsignedTx)
         }
