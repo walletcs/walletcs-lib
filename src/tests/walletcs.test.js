@@ -75,6 +75,32 @@ test('Test sign ether transaction by xPriv', async () => {
 
 });
 
+test('Test sign ether transaction by xPriv with invalid address', async () => {
+  const wallet = new wallets.EtherWalletHD();
+  const xprv = 'xprv9s21ZrQH143K4bHciWrVe2rWXvBxvVXc54KjtNcYyGfsJN6cWRKSFErAJHvU5yyirhqu9ELproykvhRXg5xudD9W89Y2bxaDBcSjMU5kZqW';
+  const tx = new transactions.EtherTx();
+  tx.to = '0x343E60ACea58388fCba2C21F302312feCf55175A';
+  tx.gasPrice = ethers.utils.bigNumberify(1000000000);
+  tx.gasLimit = ethers.utils.bigNumberify(21000);
+  tx.value = ethers.utils.parseEther("0.0001");
+  const xprvSinedTx = await wallet.signTransactionByxPriv(xprv, tx, ['0x343E60ACea58388fCba2C21F302312feCf55175A']);
+
+  expect(xprvSinedTx).not.toBeTruthy();
+});
+
+test('Test sign bitcoin transaction by xPriv with invalid address', async () => {
+  const network = 'test3';
+  const wallet = new wallets.BitcoinWalletHD(network);
+  const xprv = 'tprv8ZgxMBicQKsPd7Z9HS5DhPQPhL4aotcZLMhDEUqFT7gS9FDhA1F9ZBrBKAFcmAPTjiyF117BpQgdyAzAszSYbQu2NhAcxsTW5HofASryz1i';
+  const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 10);
+  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": child1.address,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address":child1.address,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": child1.address,"satoshis":10000}],"from":[child1.address],"to":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"amount":[10000,110000], "changeAddress": child1.address, "fee": null};
+  const unsigedTxs = parsers.JSONParser.parseFile(JSON.stringify(bitcoinFileTx));
+  const tx = unsigedTxs[0];
+  const xprvSinedTx = await wallet.signTransactionByxPriv(xprv, tx, ['0x343E60ACea58388fCba2C21F302312feCf55175A']);
+
+  expect(xprvSinedTx).not.toBeTruthy();
+});
+
 test('Test generate bitcoin mnemonic', async () => {
   const mnemonic = wallets.BitcoinWalletHD.generateMnemonic();
 
