@@ -7,9 +7,9 @@ const bitcore = require('bitcore-lib');
 
 test('Test create ether pair keys from mnemonic',  async () => {
   const wallet = new wallets.EtherWalletHD();
-  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
   expect(addresses.xPub).toEqual('xpub661MyMwAqRbcG42Nchfke9KUhfnD4BZKko2XrrPTCXaVmZNS9D7AGHFEEpVMF2ddCiRHxY4DGJVyHDsc69qS2Z8c4YCzKbgSpAcpAtuzGKb');
-  expect(addresses.xPrv).toEqual('xprv9s21ZrQH143K3ZwuWg8kH1Nk9dwieiqUPa6w4TyqeC3Wtm3HbfnuiUvkPZMx6WcYAMcLphQJnnkautdLoVZmPiXunLdu5jqKPUwK6YDwxb6');
+  expect(addresses.xPriv).toEqual('xprv9s21ZrQH143K3ZwuWg8kH1Nk9dwieiqUPa6w4TyqeC3Wtm3HbfnuiUvkPZMx6WcYAMcLphQJnnkautdLoVZmPiXunLdu5jqKPUwK6YDwxb6');
 
 });
 
@@ -25,7 +25,7 @@ test('Test validation ether mnemonic', async () => {
 
 test('Test get number account from ether xPub', async () => {
   const wallet = new wallets.EtherWalletHD();
-  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
   const xpub = addresses.xPub;
   const address = wallet.getAddressFromXpub(xpub);
 
@@ -34,8 +34,8 @@ test('Test get number account from ether xPub', async () => {
 
 test('Test get number account from ether xprv', async () => {
   const wallet = new wallets.EtherWalletHD();
-  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
-  const xprv = addresses.xPrv;
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPriv;
   const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
 
   expect(child1.address).toEqual('0x343E60ACea58388fCba2C21F302312feCf55175A');
@@ -44,8 +44,8 @@ test('Test get number account from ether xprv', async () => {
 
 test('Test sign ether transaction by privateKey', async () => {
   const wallet = new wallets.EtherWalletHD();
-  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
-  const xprv = addresses.xPrv;
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPriv;
   const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
   const tx = new transactions.EtherTx();
   tx.to = '0x343E60ACea58388fCba2C21F302312feCf55175A';
@@ -60,8 +60,8 @@ test('Test sign ether transaction by privateKey', async () => {
 
 test('Test sign ether transaction by xPriv', async () => {
   const wallet = new wallets.EtherWalletHD();
-  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
-  const xprv = addresses.xPrv;
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPriv;
   const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
   const tx = new transactions.EtherTx();
   tx.to = '0x343E60ACea58388fCba2C21F302312feCf55175A';
@@ -69,7 +69,7 @@ test('Test sign ether transaction by xPriv', async () => {
   tx.gasLimit = ethers.utils.bigNumberify(21000);
   tx.value = ethers.utils.parseEther("0.0001");
   const sinedTx = await wallet.signTransactionByPrivateKey(child1.privateKey, tx);
-  const xprvSinedTx = await wallet.signTransactionByxPriv(xprv, tx, child1.address);
+  const xprvSinedTx = await wallet.signTransactionByxPriv(xprv, tx, [child1.address]);
 
   expect(sinedTx).toEqual(xprvSinedTx);
 
@@ -141,7 +141,7 @@ test('Test sign bitcoin transaction by privateKey', async () => {
 
 });
 
-test('Test sign bitcoin transaction by xPrv', async () => {
+test('Test sign bitcoin transaction by i', async () => {
   const network = 'test3';
   const wallet = new wallets.BitcoinWalletHD(network);
   const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
@@ -157,7 +157,7 @@ test('Test sign bitcoin transaction by xPrv', async () => {
 
 });
 
-test('Test create bitcoin xPrv with bad mnemonic', async () => {
+test('Test create bitcoin xPriv with bad mnemonic', async () => {
   const network = 'test3';
   const wallet = new wallets.BitcoinWalletHD(network);
 
@@ -169,9 +169,9 @@ test('Test create bitcoin xPrv with bad mnemonic', async () => {
 test('Test create ether xPriv with bad mnemonic', async () => {
   const wallet = new wallets.EtherWalletHD();
 
-  expect(() => {
+  await expect(
     wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp')
-  }).toThrowError(errors.MNEMONIC);
+  ).rejects.toThrowError(errors.MNEMONIC);
 });
 
 test('Test create bitcoin address/PrivateKey with bad xPriv', async () => {
@@ -187,7 +187,7 @@ test('Test create bitcoin address/PrivateKey with bad xPriv', async () => {
 
 test('Test create ether address/PrivateKey with bad xPriv', async () => {
   const wallet = new wallets.EtherWalletHD();
-  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
   const xprv = addresses.xPriv;
 
   expect(() => {
@@ -211,8 +211,8 @@ test('Test create bitcoin address/PrivateKey with bad privateKey', async () =>{
 
 test('Test create ether address/PrivateKey with bad privateKey', async () => {
   const wallet = new wallets.EtherWalletHD();
-  const addresses = wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
-  const xprv = addresses.xPrv;
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPriv;
   const child1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
   const tx = new transactions.EtherTx();
   tx.to = '0x343E60ACea58388fCba2C21F302312feCf55175A';
