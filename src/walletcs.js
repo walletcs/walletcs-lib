@@ -180,8 +180,10 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
       if (pair.address === address){
         return pair
       }
+      if (i >= depth || SEARCH_DEPTH){
+        return null
+      }
     }
-    return null
   }
 
   async signTransactionByPrivateKey(prv, unsignedTx){
@@ -262,12 +264,15 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
 
   searchAddressInParent(xpriv, address, depth) {
     for (let i = 0; i < depth || SEARCH_DEPTH; i += 1) {
+      console.log( depth || SEARCH_DEPTH, i);
       let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
         return pair
       }
+      if (i >= depth || SEARCH_DEPTH){
+        return null
+      }
     }
-    return null
   }
 
   async signTransactionByPrivateKey(prv, unsignedTx){
