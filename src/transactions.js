@@ -99,7 +99,6 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
     super();
     this.to = [];
     this.from = [];
-    this.amounts = [];
     this.inputs = [];
     this.change = 0;
     this.fee = 0;
@@ -108,7 +107,7 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
   }
 
   isCompleted(){
-    return this.to.length && this.from.length && this.amounts.length && this.inputs.length && this.fee && this.changeAddress;
+    return this.to.length && this.from.length && this.inputs.length && this.fee && this.changeAddress;
   }
 
   __getTX() {
@@ -116,7 +115,6 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
     return {
       to: this.to,
       from: this.from,
-      amounts: this.amounts,
       inputs: this.inputs,
       change: this.change,
       fee: this.fee,
@@ -187,13 +185,16 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
     this.transaction.threshold = threshold;
   }
 
-  setToAddress(address){
-    if(_.isArray(address)){
-      this.transaction.to = _.concat(this.transaction.to, address)
+  setToAddress(item){
+    if(_.isArray(item)){
+      this.transaction.to = _.concat(this.transaction.to, _.map(item, function (val) {
+        return {address: val.address, satoshis: convertToSatoshi(val.amount)}
+      }))
     }
     else{
-      this.transaction.to.push(address);
+      this.transaction.to.push({address: item.address, satoshis: convertToSatoshi(item.amount)});
     }
+
   }
 
   // setAmount(amount){
@@ -220,13 +221,10 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
   }
 
   calculateFee(fee){
-    if (!fee && this.transaction.to.length && this.transaction.amounts.length) {
+    if (!fee && this.transaction.to.length) {
       try {
         const tx = new bitcore.Transaction();
-        tx.to(_.map(this.transaction.to,
-          function (val) {
-            return {'address': val.address, 'satoshis': val.amount};
-          }));
+        tx.to(this.transaction.to);
         tx.from(this.transaction.inputs);
         tx.change(this.transaction.changeAddress);
         this.transaction.fee = tx.getFee();
@@ -290,10 +288,9 @@ class TransactionConstructor {
     this.builder = builder;
   }
 
-  buildBitcoinTx(outxs, from, to, amounts, changeAddress, fee){
+  buildBitcoinTx(outxs, from, to, changeAddress, fee){
     this.builder.setFromAddress(from);
     this.builder.setToAddress(to);
-    this.builder.setAmount(amounts);
     const self = this;
     if (_.isArray(outxs)){
       _.each(outxs, function (outx) {
@@ -330,10 +327,9 @@ class TransactionConstructor {
     return this.builder.getResult();
   }
 
-  buildBitcoinMultiSignTx(outxs, from, to, amounts, changeAddress, fee, threshold){
+  buildBitcoinMultiSignTx(outxs, from, to, changeAddress, fee, threshold){
     this.builder.setFromAddress(from);
     this.builder.setToAddress(to);
-    this.builder.setAmount(amounts);
     this.builder.setThreshold(threshold);
     const self = this;
     if (_.isArray(outxs)){

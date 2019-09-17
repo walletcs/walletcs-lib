@@ -52,7 +52,7 @@ class JSONParser extends parsers.FileParserInterface {
         JSONParser.__checkListStructure(data.outx, structures.Outx);
         const builder = new transactions.BitcoinTxBuilder();
         const director = new transactions.TransactionConstructor(builder);
-        const tx = director.buildBitcoinTx(data.outx, data.from, data.to, data.amount, data.changeAddress);
+        const tx = director.buildBitcoinTx(data.outx, data.from, data.to, data.changeAddress);
         if (tx) result.push(tx);
 
       }

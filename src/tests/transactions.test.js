@@ -58,7 +58,6 @@ test('Test create unspent BitcoinTx', async () => {
 
   expect(bitcoinTx.to).toEqual([]);
   expect(bitcoinTx.from).toEqual([]);
-  expect(bitcoinTx.amounts).toEqual([]);
   expect(bitcoinTx.changeAddress).toEqual('');
   expect(bitcoinTx.change).toEqual(0);
   expect(bitcoinTx.fee).toEqual(0);
@@ -120,22 +119,20 @@ test('Test build bitcoin transaction', async () => {
   const builder = new transactions.BitcoinTxBuilder();
   builder.setFromAddress(BITCOIN_ADDRESS);
   builder.setFromAddress(BITCOIN_ADDRESS);
-  builder.setToAddress(BITCOIN_ADDRESS);
-  builder.setToAddress(BITCOIN_ADDRESS);
-  builder.setAmount(0.0001);
-  builder.setAmount(0.0002);
+  builder.setToAddress({address: BITCOIN_ADDRESS, amount: 0.0001});
+  builder.setToAddress({address: BITCOIN_ADDRESS, amount: 0.0002});
   builder.setChangeAddress(BITCOIN_ADDRESS);
   builder.addOutx(outx);
   builder.calculateFee();
 
   const transaction = builder.getResult();
 
-  expect(transaction.to[0]).toEqual(BITCOIN_ADDRESS);
-  expect(transaction.to[1]).toEqual(BITCOIN_ADDRESS);
+  expect(transaction.to[0].address).toEqual(BITCOIN_ADDRESS);
+  expect(transaction.to[1].address).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[0]).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[1]).toEqual(BITCOIN_ADDRESS);
-  expect(transaction.amounts[0]).toEqual(0.0001 * Math.pow(10, 8));
-  expect(transaction.amounts[1]).toEqual(0.0002 * Math.pow(10, 8));
+  expect(transaction.to[0].amount).toEqual(0.0001 * Math.pow(10, 8));
+  expect(transaction.to[1].amount).toEqual(0.0002 * Math.pow(10, 8));
   expect(transaction.changeAddress).toEqual(BITCOIN_ADDRESS);
   expect(transaction.inputs[0].script).not.toEqual(undefined);
   expect(transaction.fee).not.toEqual(0);
@@ -151,20 +148,19 @@ test('Test build bitcoin transaction with array params', async () => {
   };
   const builder = new transactions.BitcoinTxBuilder();
   builder.setFromAddress([BITCOIN_ADDRESS, BITCOIN_ADDRESS]);
-  builder.setToAddress([BITCOIN_ADDRESS, BITCOIN_ADDRESS]);
-  builder.setAmount([0.0001, 0.0002]);
+  builder.setToAddress([{address: BITCOIN_ADDRESS, amount: 0.0001}, {address: BITCOIN_ADDRESS, amount: 0.0002}]);
   builder.setChangeAddress(BITCOIN_ADDRESS);
   builder.addOutx(outx);
   builder.calculateFee();
-
+  console.log(builder.transaction);
   const transaction = builder.getResult();
 
-  expect(transaction.to[0]).toEqual(BITCOIN_ADDRESS);
-  expect(transaction.to[1]).toEqual(BITCOIN_ADDRESS);
+  expect(transaction.to[0].address).toEqual(BITCOIN_ADDRESS);
+  expect(transaction.to[1].address).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[0]).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[1]).toEqual(BITCOIN_ADDRESS);
-  expect(transaction.amounts[0]).toEqual(0.0001 * Math.pow(10, 8));
-  expect(transaction.amounts[1]).toEqual(0.0002 * Math.pow(10, 8));
+  expect(transaction.to[0].amount).toEqual(0.0001 * Math.pow(10, 8));
+  expect(transaction.to[1].amount).toEqual(0.0002 * Math.pow(10, 8));
   expect(transaction.changeAddress).toEqual(BITCOIN_ADDRESS);
   expect(transaction.inputs[0].script).not.toEqual(undefined);
   expect(transaction.fee).not.toEqual(0);
