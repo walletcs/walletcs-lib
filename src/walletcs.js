@@ -120,10 +120,7 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
       }else{
         tx.from(unsignedTx.inputs);
       }
-      tx.to( _.zipWith(unsignedTx.to, unsignedTx.amounts,
-        function (to, amount) {
-          return {'address': to, 'satoshis': amount};
-      }));
+      tx.to(unsignedTx.to);
       tx.change(unsignedTx.changeAddress);
       return tx;
     }catch (e) {
