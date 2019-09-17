@@ -2,15 +2,15 @@ require("@babel/register");
 
 const Outx = {
   address: '',        // String
-  satoshis: 0,         // Integer
+  satoshis: 0,        // Integer
   txId: '',           // String
   outputIndex: '',    // String
 };
 
 
 const EtherTransaction = {
-  to: '',             // String
-  data: '0x',        // String
+  to: [],             // List[<TransactionTo>]
+  data: '0x',         // String
   nonce: 0,           // Integer
   gasLimit: 0,        // Integer
   gasPrice: 0,        // Integer
@@ -19,25 +19,34 @@ const EtherTransaction = {
 
 const EtherContractTransaction = {
     to: '',             // String
-    data: '0x',        // String
+    data: '0x',         // String
     nonce: 0,           // Integer
     gasLimit: 0,        // Integer
     gasPrice: 0,        // Integer
 };
 
 const EtherFileTransaction = {
-  pubKey: '',       // String
+  pubKey: '',          // String
   transactions: [],    // List[<EtherTransaction>]
-  contracts: []         // List[<ABI>]
+  contracts: []        // List[<ABI>]
 };
 
 const BitcoinFileTransaction = {
-  from: [],           // List[String]
-  to: [],             // List[String]
-  amount: [],        // List[Float]
+  from: [],           // List[<TransactionFrom>]
+  to: [],             // List[<TransactionTo>]
   fee: 0,             // Float
   changeAddress: '',  // String
   outx: []            // List[<Outx>]
+};
+
+const TransactionFrom = {
+  address: '',        // String
+  change: false       // Bool
+};
+
+const TransactionTo = {
+  address: '',        // String
+  amount: 0.0         // Float
 };
 
 const BitcoinInput = {

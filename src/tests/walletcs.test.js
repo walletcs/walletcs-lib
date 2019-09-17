@@ -242,5 +242,20 @@ test('Test create multisign address', async() =>{
 
 
 test('Test create multisign tx', async () => {
+  const network = 'test3';
+  const wallet = new wallets.BitcoinWalletHD(network);
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPriv;
+  const pair1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
+  const pair2 = wallet.getAddressWithPrivateFromXprv(xprv, 1);
+  const publicKeys = [pair2.privateKey, pair1.privateKey].map(function (key) {
+    return wallets.BitcoinWalletHD.getPublicKeyFromPrivateKey(key);
+  });
+  const multiSignAddress = wallets.BitcoinWalletHD.createMultiSignAddress(2, 'main', publicKeys);
+  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": multiSignAddress,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address": multiSignAddress,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": multiSignAddress,"satoshis":10000}],"from":[pair1.address, pair2.address],"to":["mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X"],"amount":[10000,110000], "changeAddress": multiSignAddress, "fee": null};
+  const unsigedTxs = parsers.JSONParser.parseFile(JSON.stringify(bitcoinFileTx));
+  const tx = unsigedTxs[0];
+  console.log(tx);
+  const multiSignTx = wallet.createTx(tx);
 
 });

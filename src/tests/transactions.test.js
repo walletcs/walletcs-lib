@@ -202,7 +202,7 @@ test('Test fail build ether contract tx', async () => {
   expect(builder.getResult().isCompleted()).not.toBeTruthy();
 });
 
-test('Test ether director builder', async () => {
+test('Test director builde etherr tx', async () => {
   const rawTx = structures.EtherTransaction;
   rawTx.nonce = 1;
   rawTx.gasLimit = 21000;
@@ -223,7 +223,7 @@ test('Test ether director builder', async () => {
 });
 
 
-test('Test Ether Contract director builder', async () => {
+test('Test  director builder rther contract tx', async () => {
   const rawTx = structures.EtherTransaction;
   rawTx.nonce = 1;
   rawTx.gasLimit = 21000;
@@ -246,7 +246,32 @@ test('Test Ether Contract director builder', async () => {
   expect(transaction.methodParams).toEqual([]);
 });
 
-test('Test Bitcoin director builder', async () => {
+test('Test director builder bitcoin tx', async () => {
+   const outx = {
+    txId: '557bf23415160ce932ea5215e238132bf1cc42c1a7f91846d335d0d1e33cd19f',
+    address: BITCOIN_ADDRESS,
+    satoshis: 2538851,
+    outputIndex: 1
+  };
+  const builder = new transactions.BitcoinTxBuilder();
+  const director = new transactions.TransactionConstructor(builder);
+  const transaction = director.buildBitcoinTx(outx, [BITCOIN_ADDRESS],
+    [BITCOIN_ADDRESS, BITCOIN_ADDRESS], [0.0001, 0.0002], BITCOIN_ADDRESS);
+
+  const input = structures.BitcoinInput;
+  input.address = BITCOIN_ADDRESS;
+  input.outputIndex = outx.outputIndex;
+  input.satoshis = outx.satoshis;
+  input.script = new bitcore.Script(bitcore.Address(BITCOIN_ADDRESS)).toHex();
+  input.txId = outx.txId;
+
+  expect(transaction.fee).not.toEqual(0);
+  expect(transaction.changeAddress).toEqual(BITCOIN_ADDRESS);
+  expect(transaction.inputs[0]).toEqual(input);
+
+});
+
+test('Test director builder multisign bitcoin tx', async () => {
    const outx = {
     txId: '557bf23415160ce932ea5215e238132bf1cc42c1a7f91846d335d0d1e33cd19f',
     address: BITCOIN_ADDRESS,

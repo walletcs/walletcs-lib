@@ -196,19 +196,19 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
     }
   }
 
-  setAmount(amount){
-    if(_.isArray(amount)){
-      this.transaction.amounts = _.concat(this.transaction.amounts, amount)
-    }else{
-      this.transaction.amounts.push(amount);
-    }
-    this.transaction.amounts = _.map(this.transaction.amounts, function (val) {
-      if(isFloat(val)) {
-        return convertToSatoshi(val);
-      }
-      return val
-    })
-  }
+  // setAmount(amount){
+  //   if(_.isArray(amount)){
+  //     this.transaction.amounts = _.concat(this.transaction.amounts, amount)
+  //   }else{
+  //     this.transaction.amounts.push(amount);
+  //   }
+  //   this.transaction.amounts = _.map(this.transaction.amounts, function (val) {
+  //     if(isFloat(val)) {
+  //       return convertToSatoshi(val);
+  //     }
+  //     return val
+  //   })
+  // }
 
   addOutx(outx){
     const input = convetOutxToInput(outx);
@@ -223,9 +223,9 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
     if (!fee && this.transaction.to.length && this.transaction.amounts.length) {
       try {
         const tx = new bitcore.Transaction();
-        tx.to(_.zipWith(this.transaction.to, this.transaction.amounts,
-          function (to, amount) {
-            return {'address': to, 'satoshis': amount};
+        tx.to(_.map(this.transaction.to,
+          function (val) {
+            return {'address': val.address, 'satoshis': val.amount};
           }));
         tx.from(this.transaction.inputs);
         tx.change(this.transaction.changeAddress);

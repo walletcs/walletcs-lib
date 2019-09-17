@@ -4,6 +4,7 @@ const bip32 = require('bip32');
 const bitcoinjs = require('bitcoinjs-lib');
 const bitcore = require('bitcore-lib');
 const walletcs = require('./base/walletc');
+const transactions = require('./transactions');
 const errors = require('./base/errors');
 const _ = require('lodash');
 
@@ -80,6 +81,16 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     return address.toString();
   }
 
+  createMultiSignTx(data){
+    // TODO: test
+    const builder = new transactions.BitcoinTxBuilder();
+    const director = new transactions.TransactionConstructor(builder);
+    const unsignedTx = director.buildBitcoinMultiSignTx(data.outx, data.from, data.to,
+      data.amount, data.changeAddress, data.fee, data.threshold || data.from.length);
+    const tx = this.__builtTx(unsignedTx);
+    return tx.toJSON();
+  }
+
   static getPublicKeyFromPrivateKey(privateKey){
     const publicKey = bitcore.PublicKey(bitcore.PrivateKey(privateKey));
     return publicKey.toString();
@@ -91,6 +102,7 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
   }
 
   combineMultiSignSignatures(unsignedTx, signatures) {
+    // TODO: test
     const tx = this.__builtTx(unsignedTx);
     _.each(signatures, function (signature) {
       _.each(signature, function (sign) {
@@ -108,15 +120,14 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
       }else{
         tx.from(unsignedTx.inputs);
       }
-      const addresses = _.zipWith(unsignedTx.to, unsignedTx.amounts,
+      tx.to( _.zipWith(unsignedTx.to, unsignedTx.amounts,
         function (to, amount) {
           return {'address': to, 'satoshis': amount};
-      });
-      tx.to(addresses);
+      }));
       tx.change(unsignedTx.changeAddress);
-      tx.fee(tx.getFee());
       return tx;
     }catch (e) {
+      console.log(e);
       throw Error(errors.TX_FORMAT)
     }
   }
@@ -212,6 +223,12 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
     return ethers.utils.HDNode.isValidMnemonic(mnemonic);
   }
 
+  createTx(unsignedTx){
+    // TODO: test
+    const tx = this.__builtTx(unsignedTx);
+    return tx.toJSON();
+  }
+
   __builtTx(unsignedTx) {
     const tx = unsignedTx.getTx();
     if (!tx) throw (errors.TX_FORMAT);
@@ -221,7 +238,7 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   getFromMnemonic (mnemonic) {
     if(!ethers.utils.HDNode.isValidMnemonic(mnemonic)) throw Error(errors.MNEMONIC);
     const node = ethers.utils.HDNode.fromMnemonic(mnemonic);
-    return {'xPub': node.neuter().extendedKey, 'xPrv': node.extendedKey} // returns xPub xPrv
+    return {'xPub': node.neuter().extendedKey, 'xPriv': node.extendedKey} // returns xPub xPriv
   }
 
   getAddressWithPrivateFromXprv(xpriv, number_address) {
