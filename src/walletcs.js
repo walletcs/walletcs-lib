@@ -5,10 +5,27 @@ const bitcoinjs = require('bitcoinjs-lib');
 const bitcore = require('bitcore-lib');
 const walletcs = require('./base/walletc');
 const transactions = require('./transactions');
+const structures = require('./base/structures');
 const errors = require('./base/errors');
 const _ = require('lodash');
 
 const SEARCH_DEPTH = 1000;
+
+function convertToBitcoreTx(data) {
+  const tx = bitcore.Transaction();
+  tx.from(data.from);
+  tx.to(data.to);
+  tx.change(data.changeAddress);
+  tx.fee(data.fee);
+  
+  return tx
+}
+
+// function convertToWalletCSTx(data) {
+//   const _tx = new bitcore.Transaction(data);
+//   const tx = structures.BitcoinFileTransaction;
+//   tx.changeAddress =
+// }
 
 function _chooseNetwork(network)
     // Choose between two networks testnet and main
@@ -81,14 +98,24 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     return address.toString();
   }
 
+  // signMultiSignTx(privateKey, multiSignTx){
+  //   const tx = new bitcore.Transaction(multiSignTx);
+  //   console.log(tx.toObject());
+  //   return tx.sign(new bitcore.PrivateKey(privateKey)).uncheckedSerialize();
+  //
+  // }
+
   createMultiSignTx(data){
-    // TODO: test
+    let threshold = data.threshold;
+    if (!threshold){
+      threshold = data.from.length;
+    }
+
     const builder = new transactions.BitcoinTxBuilder();
     const director = new transactions.TransactionConstructor(builder);
     const unsignedTx = director.buildBitcoinMultiSignTx(data.outx, data.from, data.to,
-      data.amount, data.changeAddress, data.fee, data.threshold || data.from.length);
-    const tx = this.__builtTx(unsignedTx);
-    return tx.toJSON();
+      data.changeAddress, data.fee, threshold);
+    return unsignedTx;
   }
 
   static getPublicKeyFromPrivateKey(privateKey){
@@ -96,17 +123,12 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     return publicKey.toString();
   }
 
-  static getSignatures(signedTx, privateKey){
-    const tx = new bitcore.Transaction(signedTx);
-    return tx.getSignatures(privateKey);
-  }
-
-  combineMultiSignSignatures(unsignedTx, signatures) {
-    // TODO: test
-    const tx = this.__builtTx(unsignedTx);
-    _.each(signatures, function (signature) {
-      _.each(signature, function (sign) {
-        tx.addSignature(sign);
+  combineMultiSignSignatures(multiSignTxs) {
+    const tx = new bitcore.Transaction(multiSignTxs[0]);
+    const newTx = multiSignTxs.slice(1, 0);
+    _.each(newTx, function (tr) {
+      _.each(tr.getSignatures(), function (sign) {
+        tx.applySignature(sign);
       })
     });
     return tx.serialize();
@@ -116,7 +138,15 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     try {
       const tx = new bitcore.Transaction();
       if(unsignedTx.threshold){
-        tx.from(unsignedTx.inputs, unsignedTx.from, unsignedTx.threshold)
+        tx.from(unsignedTx.inputs, unsignedTx.from, unsignedTx.threshold);
+        _.each(unsignedTx.inputs, function (input) {
+          _.each(input.signatures, function (sign) {
+            if (sign){
+              const signature = new bitcore.Transaction.Signature(sign);
+              tx.applySignature(signature);
+            }
+          })
+        })
       }else{
         tx.from(unsignedTx.inputs);
       }
@@ -165,17 +195,19 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     // Use BIP32 method for get child key
     try{
       const root = bip32.fromBase58(xpriv, this.network);
-      const child1b = root
-      .derive(0)
-      .derive(number_address);
-      return {'address': getAddress(child1b, this.network), 'privateKey': child1b.toWIF()}
+      const child1b = root.derive(0).derive(number_address);
+      return {
+        'address': getAddress(child1b, this.network),
+        'privateKey': child1b.toWIF(),
+        'publicKey': child1b.publicKey.toString('hex')
+      }
     }catch (e) {
       throw Error(errors.XPRIV)
     }
   };
 
   searchAddressInParent(xpriv, address, depth) {
-    for (let i = 0; i < depth || SEARCH_DEPTH; i += 1) {
+    for (let i = 0; i <= (depth || SEARCH_DEPTH); i += 1) {
       let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
         return pair
@@ -187,13 +219,34 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
   }
 
   async signTransactionByPrivateKey(prv, unsignedTx){
-    const tx = this.__builtTx(unsignedTx);
     try{
-        tx.sign(new bitcore.PrivateKey(prv));
+      const tx = this.__builtTx(unsignedTx);
+      tx.sign(new bitcore.PrivateKey(prv));
+      return tx.uncheckedSerialize();
     }catch (e) {
       throw Error(errors.PRIVATE_KEY);
     }
-    return tx.serialize()
+  }
+
+  async signMultiSignTransactionByPrivateKey(prv, unsignedTx){
+    try{
+      const tx = this.__builtTx(unsignedTx);
+      tx.sign(new bitcore.PrivateKey(prv));
+      return this.__combineSignatures(unsignedTx, tx);
+    }catch (e) {
+      console.log(e);
+      throw Error(errors.PRIVATE_KEY);
+    }
+  }
+
+  __combineSignatures(unsignedTx, signedTx){
+    _.each(unsignedTx.inputs, function (input, index) {
+      unsignedTx.inputs[index].signatures = signedTx.inputs[index].signatures.map(function (signature) {
+        return signature.toJSON();
+      });
+
+    });
+    return unsignedTx;
   }
 
   async signTransactionByxPriv(xpriv, unsignedTx, addresses, depth) {
@@ -223,7 +276,6 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   }
 
   createTx(unsignedTx){
-    // TODO: test
     const tx = this.__builtTx(unsignedTx);
     return tx.toJSON();
   }
@@ -245,7 +297,11 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
     try {
       const root = ethers.utils.HDNode.fromExtendedKey(xpriv);
       const standardEthereum = root.derivePath(`0/${number_address || 0}`);
-      return {'address': standardEthereum.address, 'privateKey': standardEthereum.privateKey}
+      return {
+        'address': standardEthereum.address,
+        'privateKey': standardEthereum.privateKey,
+        'publicKey': standardEthereum.publicKey.toString()
+      }
     }catch (e) {
       throw Error(errors.XPRIV)
     }
@@ -263,8 +319,7 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   }
 
   searchAddressInParent(xpriv, address, depth) {
-    for (let i = 0; i < depth || SEARCH_DEPTH; i += 1) {
-      console.log( depth || SEARCH_DEPTH, i);
+    for (let i = 0; i <= (depth || SEARCH_DEPTH); i += 1) {
       let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
         return pair

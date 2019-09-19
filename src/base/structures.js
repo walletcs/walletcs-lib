@@ -55,7 +55,17 @@ const BitcoinInput = {
   address: '',        // String
   satoshis: '',       // String
   script: '',         // String
+  signatures: []      // String
 
+};
+
+const Signature = {
+  publicKey: '',
+  prevTxId:  '',
+  outputIndex: '',
+  inputIndex: '',
+  signature: '',
+  sigtype: '',
 };
 
 module.exports = {
@@ -64,5 +74,6 @@ module.exports = {
   EtherFileTransaction,
   BitcoinFileTransaction,
   BitcoinInput,
-  EtherContractTransaction
+  EtherContractTransaction,
+  Signature
 };

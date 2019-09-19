@@ -131,8 +131,8 @@ test('Test build bitcoin transaction', async () => {
   expect(transaction.to[1].address).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[0]).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[1]).toEqual(BITCOIN_ADDRESS);
-  expect(transaction.to[0].amount).toEqual(0.0001 * Math.pow(10, 8));
-  expect(transaction.to[1].amount).toEqual(0.0002 * Math.pow(10, 8));
+  expect(transaction.to[0].satoshis).toEqual(0.0001 * Math.pow(10, 8));
+  expect(transaction.to[1].satoshis).toEqual(0.0002 * Math.pow(10, 8));
   expect(transaction.changeAddress).toEqual(BITCOIN_ADDRESS);
   expect(transaction.inputs[0].script).not.toEqual(undefined);
   expect(transaction.fee).not.toEqual(0);
@@ -159,8 +159,8 @@ test('Test build bitcoin transaction with array params', async () => {
   expect(transaction.to[1].address).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[0]).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[1]).toEqual(BITCOIN_ADDRESS);
-  expect(transaction.to[0].amount).toEqual(0.0001 * Math.pow(10, 8));
-  expect(transaction.to[1].amount).toEqual(0.0002 * Math.pow(10, 8));
+  expect(transaction.to[0].satoshis).toEqual(0.0001 * Math.pow(10, 8));
+  expect(transaction.to[1].satoshis).toEqual(0.0002 * Math.pow(10, 8));
   expect(transaction.changeAddress).toEqual(BITCOIN_ADDRESS);
   expect(transaction.inputs[0].script).not.toEqual(undefined);
   expect(transaction.fee).not.toEqual(0);
@@ -252,7 +252,8 @@ test('Test director builder bitcoin tx', async () => {
   const builder = new transactions.BitcoinTxBuilder();
   const director = new transactions.TransactionConstructor(builder);
   const transaction = director.buildBitcoinTx(outx, [BITCOIN_ADDRESS],
-    [BITCOIN_ADDRESS, BITCOIN_ADDRESS], [0.0001, 0.0002], BITCOIN_ADDRESS);
+            [{address: BITCOIN_ADDRESS, amount: 0.0001}, {address:BITCOIN_ADDRESS, amount: 0.0002}],
+    BITCOIN_ADDRESS);
 
   const input = structures.BitcoinInput;
   input.address = BITCOIN_ADDRESS;
@@ -277,7 +278,8 @@ test('Test director builder multisign bitcoin tx', async () => {
   const builder = new transactions.BitcoinTxBuilder();
   const director = new transactions.TransactionConstructor(builder);
   const transaction = director.buildBitcoinTx(outx, [BITCOIN_ADDRESS],
-    [BITCOIN_ADDRESS, BITCOIN_ADDRESS], [0.0001, 0.0002], BITCOIN_ADDRESS);
+    [{address: BITCOIN_ADDRESS, amount: 0.0001}, {address:BITCOIN_ADDRESS, amount: 0.0002}],
+    BITCOIN_ADDRESS);
 
   const input = structures.BitcoinInput;
   input.address = BITCOIN_ADDRESS;

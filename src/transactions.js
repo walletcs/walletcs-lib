@@ -43,7 +43,10 @@ class EtherTx extends transactions.EtherUnsignedTxInterface {
   }
 
   isCompleted(){
-    return this.to && this.value && ethers.utils.bigNumberify(this.gasLimit) && ethers.utils.bigNumberify(this.gasPrice)
+    return this.to &&
+      this.value &&
+      ethers.utils.bigNumberify(this.gasLimit) &&
+      ethers.utils.bigNumberify(this.gasPrice)
   }
 
   __getTX() {
@@ -77,7 +80,11 @@ class EtherContractTx extends EtherTx {
   }
 
   isCompleted(){
-    return this.to && this.value && ethers.utils.bigNumberify(this.gasLimit) && ethers.utils.bigNumberify(this.gasPrice) && this.data !== '0x';
+    return this.to &&
+      this.value &&
+      ethers.utils.bigNumberify(this.gasLimit) &&
+      ethers.utils.bigNumberify(this.gasPrice) &&
+      this.data !== '0x';
   }
 
 
@@ -107,7 +114,11 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
   }
 
   isCompleted(){
-    return this.to.length && this.from.length && this.inputs.length && this.fee && this.changeAddress;
+    return this.to.length &&
+      this.from.length &&
+      this.inputs.length &&
+      this.fee &&
+      this.changeAddress;
   }
 
   __getTX() {
@@ -226,7 +237,6 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
         const tx = new bitcore.Transaction();
         tx.to(this.transaction.to);
         tx.from(this.transaction.inputs);
-        tx.change(this.transaction.changeAddress);
         this.transaction.fee = tx.getFee();
       }catch (e) {
         console.log('Warning fee calculation: ', e);

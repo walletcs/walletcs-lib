@@ -52,12 +52,13 @@ class JSONParser extends parsers.FileParserInterface {
         JSONParser.__checkListStructure(data.outx, structures.Outx);
         const builder = new transactions.BitcoinTxBuilder();
         const director = new transactions.TransactionConstructor(builder);
-        const tx = director.buildBitcoinTx(data.outx, data.from, data.to, data.changeAddress);
+        const tx = director.buildBitcoinTx(data.outx, data.from, data.to, data.changeAddress, data.fee);
         if (tx) result.push(tx);
 
       }
       return result;
     }catch (e) {
+      console.log(e);
       throw Error(errors.PARSING_ERROR)
     }
   }
@@ -96,6 +97,7 @@ class JSONParser extends parsers.FileParserInterface {
     const sortedKeys = Object.keys(structure).sort();
     _.each(data, function (item) {
        if(!_.isEqual(Object.keys(item).sort(), sortedKeys)){
+         console.log('ERROR:', Object.keys(item).sort(), sortedKeys);
          throw Error(errors.PARSING_ERROR)
        }
     })
