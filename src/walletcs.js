@@ -167,6 +167,7 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
   };
 
   searchAddressInParent(xpriv, address, depth) {
+    // TODO: Refactored to forEach
     for (let i = 0; i < depth || SEARCH_DEPTH; i += 1) {
       let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
@@ -249,8 +250,8 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
   }
 
   searchAddressInParent(xpriv, address, depth) {
+    // TODO: Refactored to forEach
     for (let i = 0; i < depth || SEARCH_DEPTH; i += 1) {
-      console.log( depth || SEARCH_DEPTH, i);
       let pair = this.getAddressWithPrivateFromXprv(xpriv, i);
       if (pair.address === address){
         return pair
