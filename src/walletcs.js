@@ -124,14 +124,26 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
   }
 
   combineMultiSignSignatures(multiSignTxs) {
-    const tx = new bitcore.Transaction(multiSignTxs[0]);
-    const newTx = multiSignTxs.slice(1, 0);
-    _.each(newTx, function (tr) {
-      _.each(tr.getSignatures(), function (sign) {
-        tx.applySignature(sign);
+    const self = this;
+    const tx = self.__builtTx(multiSignTxs.shift());
+    _.each(multiSignTxs, function (tr) {
+      _.each(self.__getSignatures(tr), function (signature) {
+        tx.applySignature(signature);
       })
     });
-    return tx.serialize();
+    return this.__combineSignatures(multiSignTxs[0], tx);
+  }
+
+  __getSignatures(tx){
+    const result = [];
+    _.each(tx.inputs, function (input) {
+      _.each(input.signatures, function (sign) {
+        if (sign){
+          result.push(new bitcore.Transaction.Signature(sign))
+        }
+      })
+    });
+    return result;
   }
 
   __builtTx(unsignedTx){
@@ -139,22 +151,16 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
       const tx = new bitcore.Transaction();
       if(unsignedTx.threshold){
         tx.from(unsignedTx.inputs, unsignedTx.from, unsignedTx.threshold);
-        _.each(unsignedTx.inputs, function (input) {
-          _.each(input.signatures, function (sign) {
-            if (sign){
-              const signature = new bitcore.Transaction.Signature(sign);
-              tx.applySignature(signature);
-            }
-          })
-        })
       }else{
         tx.from(unsignedTx.inputs);
       }
       tx.to(unsignedTx.to);
       tx.change(unsignedTx.changeAddress);
+      _.each(this.__getSignatures(unsignedTx), function (signature) {
+        tx.applySignature(signature);
+      });
       return tx;
     }catch (e) {
-      console.log(e);
       throw Error(errors.TX_FORMAT)
     }
   }
@@ -230,19 +236,19 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
 
   async signMultiSignTransactionByPrivateKey(prv, unsignedTx){
     try{
+
       const tx = this.__builtTx(unsignedTx);
       tx.sign(new bitcore.PrivateKey(prv));
       return this.__combineSignatures(unsignedTx, tx);
     }catch (e) {
-      console.log(e);
       throw Error(errors.PRIVATE_KEY);
     }
   }
 
   __combineSignatures(unsignedTx, signedTx){
     _.each(unsignedTx.inputs, function (input, index) {
-      unsignedTx.inputs[index].signatures = signedTx.inputs[index].signatures.map(function (signature) {
-        return signature.toJSON();
+      unsignedTx.inputs[index].signatures = _.map(signedTx.inputs[index].signatures, function (signature) {
+        if (signature) return signature.toJSON();
       });
 
     });

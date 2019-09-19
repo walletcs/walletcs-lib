@@ -5,7 +5,7 @@ const errors = require('../base/errors');
 const ethers = require('ethers');
 const bitcore = require('bitcore-lib');
 const _ = require('lodash');
-//
+
 // test('Test create ether pair keys from mnemonic',  async () => {
 //   const wallet = new wallets.EtherWalletHD();
 //   const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
@@ -281,8 +281,26 @@ const _ = require('lodash');
 //   expect(multiSignTx).toBeTruthy()
 //
 // });
-
-test('Test sign multisign by one user', async () => {
+//
+// test('Test sign multisign by one user', async () => {
+//   const network = 'test3';
+//   const wallet = new wallets.BitcoinWalletHD(network);
+//   const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+//   const xprv = addresses.xPriv;
+//   const pair1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
+//   const pair2 = wallet.getAddressWithPrivateFromXprv(xprv, 1);
+//   const publicKeys = [pair2.publicKey, pair1.publicKey];
+//   const multiSignAddress = wallets.BitcoinWalletHD.createMultiSignAddress(1, network, publicKeys);
+//   const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": multiSignAddress,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address": multiSignAddress,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": multiSignAddress,"satoshis":10000}],"from":publicKeys,"to":[{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.001},{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.0001}], "changeAddress": multiSignAddress, "fee": null, "threshold": 1};
+//   const multiSignTx = wallet.createMultiSignTx(bitcoinFileTx);
+//   const signedTx = await wallet.signMultiSignTransactionByPrivateKey(pair1.privateKey, multiSignTx);
+//   const txSerialized = wallet.__builtTx(signedTx).toObject();
+//   const tx = new bitcore.Transaction(txSerialized);
+//
+//   expect(tx.isFullySigned()).toBeTruthy();
+// });
+//
+test('Test sign multisign by two users only one signed', async () => {
   const network = 'test3';
   const wallet = new wallets.BitcoinWalletHD(network);
   const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
@@ -290,33 +308,36 @@ test('Test sign multisign by one user', async () => {
   const pair1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
   const pair2 = wallet.getAddressWithPrivateFromXprv(xprv, 1);
   const publicKeys = [pair2.publicKey, pair1.publicKey];
-  const multiSignAddress = wallets.BitcoinWalletHD.createMultiSignAddress(1, network, publicKeys);
-  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": multiSignAddress,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address": multiSignAddress,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": multiSignAddress,"satoshis":10000}],"from":publicKeys,"to":[{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.001},{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.0001}], "changeAddress": multiSignAddress, "fee": null, "threshold": 1};
+  const multiSignAddress = wallets.BitcoinWalletHD.createMultiSignAddress(2, network, publicKeys);
+  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": multiSignAddress,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address": multiSignAddress,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": multiSignAddress,"satoshis":10000}],"from":publicKeys,"to":[{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.001},{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.0001}], "changeAddress": multiSignAddress, "fee": null, "threshold": 2};
   const multiSignTx = wallet.createMultiSignTx(bitcoinFileTx);
   const signedTx = await wallet.signMultiSignTransactionByPrivateKey(pair1.privateKey, multiSignTx);
   const txSerialized = wallet.__builtTx(signedTx).toObject();
   const tx = new bitcore.Transaction(txSerialized);
 
-  expect(tx.isFullySigned()).toBeTruthy();
+  expect(tx.isFullySigned()).not.toBeTruthy();
+
 });
-//
-// test('Test sign multisign by two users', async () => {
-//     const network = 'test3';
-//   const wallet = new wallets.BitcoinWalletHD(network);
-//   const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
-//   const xprv = addresses.xPriv;
-//   const pair1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
-//   const pair2 = wallet.getAddressWithPrivateFromXprv(xprv, 1);
-//   const publicKeys = [pair2.privateKey, pair1.privateKey].map(function (key) {
-//     return wallets.BitcoinWalletHD.getPublicKeyFromPrivateKey(key);
-//   });
-//   const multiSignAddress = wallets.BitcoinWalletHD.createMultiSignAddress(2, network, publicKeys);
-//   const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": multiSignAddress,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address": multiSignAddress,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": multiSignAddress,"satoshis":10000}],"from":publicKeys,"to":[{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.001},{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.0001}], "changeAddress": multiSignAddress, "fee": null};
-//   const multiSignTx = wallet.createMultiSignTx(bitcoinFileTx);
-//
-//   const signedTx = wallet.signTransactionByPrivateKey(pair1.privateKey, multiSignTx);
-//   const signedTx2 = wallet.signTransactionByPrivateKey(pair2.privateKey, multiSignTx);
-//   console.log(signedTx.inputs[0]);
-//   const combinedTx = wallet.combineMultiSignSignatures([signedTx, signedTx2]);
-//
-// });
+
+test('Test sign multisign by two users', async () => {
+  const network = 'test3';
+  const wallet = new wallets.BitcoinWalletHD(network);
+  const addresses = await wallet.getFromMnemonic('cage fee ghost conduct beyond fork vapor gasp december online dinner donor');
+  const xprv = addresses.xPriv;
+  const pair1 = wallet.getAddressWithPrivateFromXprv(xprv, 0);
+  const pair2 = wallet.getAddressWithPrivateFromXprv(xprv, 1);
+  const publicKeys = [pair2.publicKey, pair1.publicKey];
+  const multiSignAddress = wallets.BitcoinWalletHD.createMultiSignAddress(2, network, publicKeys);
+  const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address": multiSignAddress,"satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address": multiSignAddress,"satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address": multiSignAddress,"satoshis":10000}],"from":publicKeys,"to":[{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.001},{address: "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", amount: 0.0001}], "changeAddress": multiSignAddress, "fee": null, "threshold": 2};
+  const multiSignTx = wallet.createMultiSignTx(bitcoinFileTx);
+  const multiSignTx2 = JSON.parse(JSON.stringify(multiSignTx));
+  const signedTx1 = await wallet.signMultiSignTransactionByPrivateKey(pair1.privateKey, multiSignTx);
+  const signedTx2 = await wallet.signMultiSignTransactionByPrivateKey(pair2.privateKey, multiSignTx2);
+
+  const combinedTx = wallet.combineMultiSignSignatures([signedTx1, signedTx2]);
+  const txSerialized = wallet.__builtTx(combinedTx).toObject();
+  const tx = new bitcore.Transaction(txSerialized);
+
+   expect(tx.isFullySigned()).toBeTruthy();
+
+});
