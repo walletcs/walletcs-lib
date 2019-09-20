@@ -10,16 +10,18 @@ const Outx = {
 
 const EtherTransaction = {
   to: '',             // String
-  data: '0x',        // String
+  data: '0x',         // String
   nonce: 0,           // Integer
   gasLimit: 0,        // Integer
   gasPrice: 0,        // Integer
+  from: '',           // String
   value: 0,           // Integer
 };
 
 const EtherContractTransaction = {
     to: '',             // String
-    data: '0x',        // String
+    from: '',
+    data: '0x',         // String
     nonce: 0,           // Integer
     gasLimit: 0,        // Integer
     gasPrice: 0,        // Integer

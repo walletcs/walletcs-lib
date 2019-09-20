@@ -35,6 +35,7 @@ class EtherTx extends transactions.EtherUnsignedTxInterface {
   constructor() {
     super();
     this.to = '';
+    this.from = '';
     this.value = 0;
     this.gasPrice = ethers.utils.bigNumberify(0);
     this.gasLimit = ethers.utils.bigNumberify(0);
@@ -145,6 +146,10 @@ class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
     this.transaction.to = address;
   }
 
+  setFromAddress(address){
+    this.transaction.from = address;
+  }
+
   setAmount(amount) {
     this.transaction.value =  ethers.utils.parseEther(amount.toString() || '0');
   }
@@ -251,6 +256,10 @@ class EtherContractTxBuilder extends transactions.EtherContractTxBuilderInterfac
     this.transaction = new EtherContractTx();
   }
 
+  setFromAddress(address){
+    this.transaction.from = address;
+  }
+
   setMethodName(name) {
     this.transaction.nameMethod = name;
   }
@@ -310,6 +319,7 @@ class TransactionConstructor {
 
   buildEtherTx(transaction){
     this.builder.setToAddress(transaction.to);
+    this.builder.setFromAddress(transaction.from);
     this.builder.setAmount(transaction.value);
     this.builder.setNonce(transaction.nonce);
     this.builder.setGasPrice(transaction.gasPrice);
@@ -321,6 +331,7 @@ class TransactionConstructor {
     abidecoder.addABI(abi);
     const methodData = abidecoder.decodeMethod(transaction.data);
     this.builder.setToAddress(transaction.to);
+    this.builder.setFromAddress(transaction.from);
     this.builder.setNonce(transaction.nonce);
     this.builder.setGasPrice(transaction.gasPrice);
     this.builder.setGasLimit(transaction.gasLimit);
