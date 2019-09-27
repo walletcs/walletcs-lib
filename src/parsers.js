@@ -28,17 +28,16 @@ class JSONParser extends parsers.FileParserInterface {
           let builder = null;
           let director = null;
           let createdTx = null;
-          console.log(typeFile);
-          console.log(tx);
-          if(JSONParser.__isEtherStructure(tx)){
+          if(JSONParser.__isEtherTx(tx)){
             builder = new transactions.EtherTxBuilder();
             director = new transactions.TransactionConstructor(builder);
             createdTx = director.buildEtherTx(tx)}
-          else if(JSONParser.__isContractStructure(tx)){
+          else if(JSONParser.__isContractTx(tx)){
             builder = new transactions.EtherContractTxBuilder();
             director = new transactions.TransactionConstructor(builder);
+            const address = tx.to[0] ? tx.to[0].address : tx.to.address;
             const contract = _.filter(data.contracts, function (contract) {
-              return contract.address === tx.to;
+              return contract.address === address;
             });
             createdTx = director.buildEtherContractTx(tx, contract[0].abi);
           }else{
@@ -52,13 +51,12 @@ class JSONParser extends parsers.FileParserInterface {
         JSONParser.__checkListStructure(data.outx, structures.Outx);
         const builder = new transactions.BitcoinTxBuilder();
         const director = new transactions.TransactionConstructor(builder);
-        const tx = director.buildBitcoinTx(data.outx, data.from, data.to, data.changeAddress, data.fee);
+        const tx = director.buildBitcoinTx(data.outx, data.from, data.to, data.fee);
         if (tx) result.push(tx);
 
       }
       return result;
     }catch (e) {
-      console.log(e);
       throw Error(errors.PARSING_ERROR)
     }
   }
@@ -81,12 +79,12 @@ class JSONParser extends parsers.FileParserInterface {
 
   }
 
-  static __isContractStructure(data){
-    return this.__checkStructure(data, structures.EtherContractTransaction);
+  static __isContractTx(data){
+    return !!data.data && data.data !== '0x'
   }
 
-  static __isEtherStructure(data){
-    return this.__checkStructure(data, structures.EtherTransaction);
+  static __isEtherTx(data){
+    return !JSONParser.__isContractTx(data)
   }
 
   static __checkStructure(inputStructure, exampleStructure) {
@@ -97,7 +95,6 @@ class JSONParser extends parsers.FileParserInterface {
     const sortedKeys = Object.keys(structure).sort();
     _.each(data, function (item) {
        if(!_.isEqual(Object.keys(item).sort(), sortedKeys)){
-         console.log('ERROR:', Object.keys(item).sort(), sortedKeys);
          throw Error(errors.PARSING_ERROR)
        }
     })

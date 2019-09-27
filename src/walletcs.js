@@ -113,8 +113,7 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
 
     const builder = new transactions.BitcoinTxBuilder();
     const director = new transactions.TransactionConstructor(builder);
-    const unsignedTx = director.buildBitcoinMultiSignTx(data.outx, data.from, data.to,
-      data.changeAddress, data.fee, threshold);
+    const unsignedTx = director.buildBitcoinMultiSignTx(data.outx, data.from, data.to, data.changeAddress, data.fee, threshold);
     return unsignedTx;
   }
 
@@ -241,6 +240,7 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
       tx.sign(new bitcore.PrivateKey(prv));
       return this.__combineSignatures(unsignedTx, tx);
     }catch (e) {
+      console.log(e);
       throw Error(errors.PRIVATE_KEY);
     }
   }

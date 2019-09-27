@@ -84,8 +84,8 @@ test('Test convert BitcoinTx to JSON', async() => {
 
 test('Test build ether transaction', async () => {
   const builder = new transactions.EtherTxBuilder('rinkeby');
-  builder.setToAddress(ETHER_ADDRESS);
-  builder.setAmount(2);
+  builder.setToAddress([{address: ETHER_ADDRESS, amount: 2}]);
+  builder.setFromAddress([{address: ETHER_ADDRESS}]);
   builder.setNonce(1);
   builder.setGasPrice(1000000000);
   builder.setGasLimit(21000);
@@ -100,8 +100,7 @@ test('Test build ether transaction', async () => {
 
 test('Test fail build ether transaction', async () => {
   const builder = new transactions.EtherTxBuilder('rinkeby');
-  builder.setToAddress(ETHER_ADDRESS);
-  builder.setNonce(1);
+  builder.setToAddress([]);
   builder.setGasPrice(1000000000);
   builder.setGasLimit(21000);
 
@@ -117,11 +116,10 @@ test('Test build bitcoin transaction', async () => {
     outputIndex: 1
   };
   const builder = new transactions.BitcoinTxBuilder();
-  builder.setFromAddress(BITCOIN_ADDRESS);
-  builder.setFromAddress(BITCOIN_ADDRESS);
+  builder.setFromAddress({address: BITCOIN_ADDRESS, change: true});
+  builder.setFromAddress({address: BITCOIN_ADDRESS, change: false});
   builder.setToAddress({address: BITCOIN_ADDRESS, amount: 0.0001});
   builder.setToAddress({address: BITCOIN_ADDRESS, amount: 0.0002});
-  builder.setChangeAddress(BITCOIN_ADDRESS);
   builder.addOutx(outx);
   builder.calculateFee();
 
@@ -147,12 +145,10 @@ test('Test build bitcoin transaction with array params', async () => {
     outputIndex: 1
   };
   const builder = new transactions.BitcoinTxBuilder();
-  builder.setFromAddress([BITCOIN_ADDRESS, BITCOIN_ADDRESS]);
+  builder.setFromAddress([{address: BITCOIN_ADDRESS, change: true}, {address: BITCOIN_ADDRESS, change: false}]);
   builder.setToAddress([{address: BITCOIN_ADDRESS, amount: 0.0001}, {address: BITCOIN_ADDRESS, amount: 0.0002}]);
-  builder.setChangeAddress(BITCOIN_ADDRESS);
   builder.addOutx(outx);
   builder.calculateFee();
-  console.log(builder.transaction);
   const transaction = builder.getResult();
 
   expect(transaction.to[0].address).toEqual(BITCOIN_ADDRESS);
@@ -169,7 +165,7 @@ test('Test build bitcoin transaction with array params', async () => {
 
 test('Test build ether contract tx', async () => {
   const builder = new transactions.EtherContractTxBuilder();
-  builder.setToAddress(ETHER_ADDRESS);
+  builder.setToAddress({address: ETHER_ADDRESS});
   builder.setMethodName('test');
   builder.setMethodParams([]);
   builder.setData('0x1');
@@ -188,7 +184,7 @@ test('Test build ether contract tx', async () => {
 
 test('Test fail build ether contract tx', async () => {
   const builder = new transactions.EtherContractTxBuilder();
-  builder.setToAddress(ETHER_ADDRESS);
+  builder.setToAddress([{address: ETHER_ADDRESS}]);
   builder.setMethodName('test');
   builder.setMethodParams([]);
   builder.setNonce(1);
@@ -204,8 +200,7 @@ test('Test director builde etherr tx', async () => {
   rawTx.gasLimit = 21000;
   rawTx.gasPrice = 1000000000;
   rawTx.nonce = 1;
-  rawTx.value = 2;
-  rawTx.to = ETHER_ADDRESS;
+  rawTx.to = [{address: ETHER_ADDRESS, amount: 2}];
 
   const builder = new transactions.EtherTxBuilder();
   const director = new transactions.TransactionConstructor(builder);
@@ -219,14 +214,14 @@ test('Test director builde etherr tx', async () => {
 });
 
 
-test('Test  director builder rther contract tx', async () => {
+test('Test  director builder ether contract tx', async () => {
   const rawTx = structures.EtherTransaction;
   rawTx.nonce = 1;
   rawTx.gasLimit = 21000;
   rawTx.gasPrice = 1000000000;
   rawTx.nonce = 1;
   rawTx.data = '0x1';
-  rawTx.to = ETHER_ADDRESS;
+  rawTx.to = [{address: ETHER_ADDRESS}];
   rawTx.abi = [];
 
   const builder = new transactions.EtherContractTxBuilder();
@@ -251,7 +246,7 @@ test('Test director builder bitcoin tx', async () => {
   };
   const builder = new transactions.BitcoinTxBuilder();
   const director = new transactions.TransactionConstructor(builder);
-  const transaction = director.buildBitcoinTx(outx, [BITCOIN_ADDRESS],
+  const transaction = director.buildBitcoinTx(outx, [{address: BITCOIN_ADDRESS, change: true}],
             [{address: BITCOIN_ADDRESS, amount: 0.0001}, {address:BITCOIN_ADDRESS, amount: 0.0002}],
     BITCOIN_ADDRESS);
 
@@ -277,7 +272,7 @@ test('Test director builder multisign bitcoin tx', async () => {
   };
   const builder = new transactions.BitcoinTxBuilder();
   const director = new transactions.TransactionConstructor(builder);
-  const transaction = director.buildBitcoinTx(outx, [BITCOIN_ADDRESS],
+  const transaction = director.buildBitcoinTx(outx, [{address: BITCOIN_ADDRESS, change: true}],
     [{address: BITCOIN_ADDRESS, amount: 0.0001}, {address:BITCOIN_ADDRESS, amount: 0.0002}],
     BITCOIN_ADDRESS);
 
