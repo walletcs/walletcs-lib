@@ -44,7 +44,11 @@ class EtherTx extends transactions.EtherUnsignedTxInterface {
   }
 
   isCompleted(){
-    return this.to && this.value && ethers.utils.bigNumberify(this.gasLimit) && ethers.utils.bigNumberify(this.gasPrice)
+    return this.to &&
+        this.value &&
+        this.nonce !== undefined &&
+        ethers.utils.bigNumberify(this.gasLimit) &&
+        ethers.utils.bigNumberify(this.gasPrice)
   }
 
   __getTX() {
@@ -78,7 +82,12 @@ class EtherContractTx extends EtherTx {
   }
 
   isCompleted(){
-    return this.to && this.value && ethers.utils.bigNumberify(this.gasLimit) && ethers.utils.bigNumberify(this.gasPrice) && this.data !== '0x';
+    return this.to &&
+        this.value &&
+        this.nonce !== undefined &&
+        ethers.utils.bigNumberify(this.gasLimit) &&
+        ethers.utils.bigNumberify(this.gasPrice) &&
+        this.data !== '0x';
   }
 
 
@@ -100,7 +109,6 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
     super();
     this.to = [];
     this.from = [];
-    this.amounts = [];
     this.inputs = [];
     this.change = 0;
     this.fee = 0;
@@ -109,7 +117,11 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
   }
 
   isCompleted(){
-    return this.to.length && this.from.length && this.amounts.length && this.inputs.length && this.fee && this.changeAddress;
+    return this.to.length &&
+      this.from.length &&
+      this.inputs.length &&
+      this.fee &&
+      this.changeAddress;
   }
 
   __getTX() {
@@ -117,7 +129,6 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
     return {
       to: this.to,
       from: this.from,
-      amounts: this.amounts,
       inputs: this.inputs,
       change: this.change,
       fee: this.fee,
@@ -141,9 +152,31 @@ class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
     super();
     this.transaction = new EtherTx()
   }
+  
+  setFromAddress(from){
+    if (_.isArray(from)){
+      const item = from.pop();
+      if (item) {
+        this.transaction.from = item.address;
+      }
+    }else{
+      this.transaction.from = from.address;
+    }
+   return this;
+  }
 
-  setToAddress(address) {
-    this.transaction.to = address;
+  setToAddress(to) {
+    if (_.isArray(to)){
+      const item = to.pop();
+      if (item) {
+        this.transaction.to = item.address;
+        this.setAmount(item.amount);
+      }
+    }else{
+      this.transaction.to = to.address;
+      this.setAmount(to.amount);
+    }
+    return this;
   }
 
   setFromAddress(address){
@@ -152,19 +185,22 @@ class EtherTxBuilder extends transactions.EtherTxBuilderInterface {
 
   setAmount(amount) {
     this.transaction.value =  ethers.utils.parseEther(amount.toString() || '0');
+    return this;
   }
 
   setNonce(nonce) {
     this.transaction.nonce = parseInt(nonce || 0);
-
+    return this;
   }
 
   setGasPrice(gas) {
    this.transaction.gasPrice = ethers.utils.bigNumberify(gas || 1000000000);
+    return this;
   }
 
   setGasLimit(gas) {
     this.transaction.gasLimit = ethers.utils.bigNumberify(gas || 21000);
+    return this;
   }
 
   getResult() {
@@ -179,61 +215,56 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
     this.transaction = new BitcoinTx();
   }
 
-  setFromAddress(address){
-    if(_.isArray(address)){
-      this.transaction.from = _.concat(this.transaction.from, address)
+  setFromAddress(from){
+    const self = this;
+    if(_.isArray(from) && from.length){
+      this.transaction.from = _.concat(this.transaction.from, from.map(function (item) {
+        if (item.change) self.setChangeAddress(item.address);
+        return item.address
+      }))
     }
     else{
-      this.transaction.from.push(address);
+      if (from.change) self.setChangeAddress(from.address);
+      this.transaction.from.push(from.address);
     }
+    return this;
   }
 
   setThreshold(threshold){
     this.transaction.threshold = threshold;
+    return this;
   }
 
-  setToAddress(address){
-    if(_.isArray(address)){
-      this.transaction.to = _.concat(this.transaction.to, address)
+  setToAddress(to){
+    if(_.isArray(to)){
+      this.transaction.to = _.concat(this.transaction.to, _.map(to, function (item) {
+        return {address: item.address, satoshis: convertToSatoshi(item.amount)}
+      }))
     }
     else{
-      this.transaction.to.push(address);
+      this.transaction.to.push({address: to.address, satoshis: convertToSatoshi(to.amount)});
     }
-  }
-
-  setAmount(amount){
-    if(_.isArray(amount)){
-      this.transaction.amounts = _.concat(this.transaction.amounts, amount)
-    }else{
-      this.transaction.amounts.push(amount);
-    }
-    this.transaction.amounts = _.map(this.transaction.amounts, function (val) {
-      if(isFloat(val)) {
-        return convertToSatoshi(val);
-      }
-      return val
-    })
+    return this;
+  
   }
 
   addOutx(outx){
     const input = convetOutxToInput(outx);
     this.transaction.inputs.push(input);
+    return this;
   }
 
   setChangeAddress(address){
     this.transaction.changeAddress = address;
+    return this;
   }
 
   calculateFee(fee){
-    if (!fee && this.transaction.to.length && this.transaction.amounts.length) {
+    if (!fee && this.transaction.to.length) {
       try {
         const tx = new bitcore.Transaction();
-        tx.to(_.zipWith(this.transaction.to, this.transaction.amounts,
-          function (to, amount) {
-            return {'address': to, 'satoshis': amount};
-          }));
+        tx.to(this.transaction.to);
         tx.from(this.transaction.inputs);
-        tx.change(this.transaction.changeAddress);
         this.transaction.fee = tx.getFee();
       }catch (e) {
         console.log('Warning fee calculation: ', e);
@@ -242,6 +273,7 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
     if (fee) {
       this.transaction.fee = convertToSatoshi(fee)
     }
+    return this;
   }
 
   getResult() {
@@ -254,6 +286,7 @@ class EtherContractTxBuilder extends transactions.EtherContractTxBuilderInterfac
   constructor(){
     super();
     this.transaction = new EtherContractTx();
+    return this;
   }
 
   setFromAddress(address){
@@ -262,35 +295,59 @@ class EtherContractTxBuilder extends transactions.EtherContractTxBuilderInterfac
 
   setMethodName(name) {
     this.transaction.nameMethod = name;
+    return this;
   }
 
   setMethodParams(params){
     this.transaction.methodParams = params;
+    return this;
   }
-
-  setToAddress(address) {
-    this.transaction.to = address;
+  
+  setFromAddress(from){
+    if (_.isArray(from)){
+      const item = from.pop();
+      if (item) {
+        this.transaction.from = from.address;
+      }
+    }
+    return this
+  }
+  
+  setToAddress(to) {
+    if (_.isArray(to)){
+      const item = to.pop();
+      if (item) {
+        this.transaction.to = item.address;
+      }
+    }else{
+      this.transaction.to = to.address;
+    }
+    return this;
   }
 
   setNonce(nonce) {
     this.transaction.nonce = parseInt(nonce || 0);
+    return this;
 
   }
 
   setGasPrice(gas) {
    this.transaction.gasPrice = ethers.utils.bigNumberify(gas || 1000000000);
+    return this;
   }
 
   setGasLimit(gas) {
     this.transaction.gasLimit = ethers.utils.bigNumberify(gas || 21000);
+    return this;
+  }
+  
+  setData(data) {
+    this.transaction.data = data;
+    return this;
   }
 
   getResult() {
     return this.transaction;
-  }
-
-  setData(data) {
-    this.transaction.data = data;
   }
 }
 
@@ -299,10 +356,9 @@ class TransactionConstructor {
     this.builder = builder;
   }
 
-  buildBitcoinTx(outxs, from, to, amounts, changeAddress, fee){
+  buildBitcoinTx(outxs, from, to,  fee){
     this.builder.setFromAddress(from);
     this.builder.setToAddress(to);
-    this.builder.setAmount(amounts);
     const self = this;
     if (_.isArray(outxs)){
       _.each(outxs, function (outx) {
@@ -312,7 +368,6 @@ class TransactionConstructor {
     else{
       this.builder.addOutx(outxs);
     }
-    this.builder.setChangeAddress(changeAddress);
     this.builder.calculateFee(fee);
     return this.builder.getResult()
   }
@@ -320,7 +375,6 @@ class TransactionConstructor {
   buildEtherTx(transaction){
     this.builder.setToAddress(transaction.to);
     this.builder.setFromAddress(transaction.from);
-    this.builder.setAmount(transaction.value);
     this.builder.setNonce(transaction.nonce);
     this.builder.setGasPrice(transaction.gasPrice);
     this.builder.setGasLimit(transaction.gasLimit);
@@ -341,10 +395,9 @@ class TransactionConstructor {
     return this.builder.getResult();
   }
 
-  buildBitcoinMultiSignTx(outxs, from, to, amounts, changeAddress, fee, threshold){
+  buildBitcoinMultiSignTx(outxs, from, to, changeAddress, fee, threshold){
     this.builder.setFromAddress(from);
     this.builder.setToAddress(to);
-    this.builder.setAmount(amounts);
     this.builder.setThreshold(threshold);
     const self = this;
     if (_.isArray(outxs)){

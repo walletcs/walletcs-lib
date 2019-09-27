@@ -2,44 +2,49 @@ require("@babel/register");
 
 const Outx = {
   address: '',        // String
-  satoshis: 0,         // Integer
+  satoshis: 0,        // Integer
   txId: '',           // String
   outputIndex: '',    // String
 };
 
-
 const EtherTransaction = {
-  to: '',             // String
+
+  to: [],             // List[<TransactionTo>]
+  from: [],           // List[<TransactionFrom>]
   data: '0x',         // String
   nonce: 0,           // Integer
   gasLimit: 0,        // Integer
   gasPrice: 0,        // Integer
-  from: '',           // String
-  value: 0,           // Integer
-};
-
-const EtherContractTransaction = {
-    to: '',             // String
-    from: '',
-    data: '0x',         // String
-    nonce: 0,           // Integer
-    gasLimit: 0,        // Integer
-    gasPrice: 0,        // Integer
 };
 
 const EtherFileTransaction = {
-  pubKey: '',       // String
   transactions: [],    // List[<EtherTransaction>]
-  contracts: []         // List[<ABI>]
+  contracts: []        // List[<ABI>]
 };
 
 const BitcoinFileTransaction = {
-  from: [],           // List[String]
-  to: [],             // List[String]
-  amount: [],        // List[Float]
+  from: [],           // List[<TransactionFrom>]
+  to: [],             // List[<TransactionTo>]
   fee: 0,             // Float
-  changeAddress: '',  // String
   outx: []            // List[<Outx>]
+};
+
+const BitcoinTransactionFrom = {
+  address: '',        // String
+  change: false       // Bool
+};
+
+const EtherTransactionFrom = {
+  address: '',        // String
+};
+
+const TransactionTo = {
+  address: '',        // String
+  amount: 0.0         // Float
+};
+
+const ContractTransactionTo = {
+  address: ''         // String
 };
 
 const BitcoinInput = {
@@ -48,7 +53,17 @@ const BitcoinInput = {
   address: '',        // String
   satoshis: '',       // String
   script: '',         // String
+  signatures: []      // String
 
+};
+
+const Signature = {
+  publicKey: '',
+  prevTxId:  '',
+  outputIndex: '',
+  inputIndex: '',
+  signature: '',
+  sigtype: '',
 };
 
 module.exports = {
@@ -57,5 +72,9 @@ module.exports = {
   EtherFileTransaction,
   BitcoinFileTransaction,
   BitcoinInput,
-  EtherContractTransaction
+  Signature,
+  EtherTransactionFrom,
+  BitcoinTransactionFrom,
+  TransactionTo,
+  ContractTransactionTo
 };
