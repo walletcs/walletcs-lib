@@ -1,6 +1,6 @@
 {
   "name": "@exiliontech/walletcs",
-  "version": "2.0.14",
+  "version": "2.0.15",
   "scripts": {
     "test": "jest",
     "compile": "babel src --out-dir lib"
