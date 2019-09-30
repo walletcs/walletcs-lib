@@ -4,7 +4,7 @@ const errors = require('../base/errors');
 const ethers = require('ethers');
 const _ = require('lodash');
 
-const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":10000}],"from":[{"address": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X",  "change": true}],"to":[{"address": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "amount": 10000}, { "address": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "amount": 11000}], "fee": null};
+const bitcoinFileTx = { "outx":[{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":2,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":8847983},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":1,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":20000},{"txId":"191d12fe3ada580f7af7322b8fcdb840123106659fe1ebb9898c70e1b4232072","outputIndex":0,"address":"mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X","satoshis":10000}],"from":[{"address": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X",  "change": false}],"to":[{"address": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "amount": 0.0001}, { "address": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "amount": 0.00011}], "fee": 0};
 const etherFileTx = {"transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to": {"address": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3", "amount": 1}, "from": {"address": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3", "change": true}, "data":"0x"}],"contracts":[]};
 const etherContractFileTx = {"transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32, "to": {"address": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}, "from": {"address": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}, "data":"0x1" }],"contracts":[{'address': '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3', 'abi': []}]};
 const mixedEtherFileTx = {"transactions":[{"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":[{"address": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3", "amount": 10000}], "from": [{"address": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}], "data":"0x"}, {"gasLimit":21000,"gasPrice":{"_hex":"0x3b9aca00"},"nonce":32,"to":[{"address": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}], "from": [{"address": "0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3"}], "data":"0x1" }],"contracts":[{'address': '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3', 'abi': []}]};
@@ -14,7 +14,7 @@ test('Test parser bitcoin file tx', async () => {
   expect(result[0].to).toEqual([{"address": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "satoshis": 10000 }, {"address": "mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X", "satoshis": 11000}]);
   expect(result[0].from).toEqual([ 'mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X' ]);
   expect(Object.keys(result[0].inputs[0]).sort()).toEqual(Object.keys(structures.BitcoinInput).sort());
-  expect(result[0].changeAddress).toEqual('mfaEV17ReZSubrJ8ohPWB5PQqPiLMgc47X');
+  expect(result[0].changeAddress).toEqual('');
   expect(result[0].fee).not.toEqual(0);
 });
 

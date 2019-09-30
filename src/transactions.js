@@ -117,11 +117,10 @@ class BitcoinTx extends transactions.BitcoinUnsignedTxInterface {
   }
 
   isCompleted(){
-    return this.to.length &&
-      this.from.length &&
-      this.inputs.length &&
-      this.fee &&
-      this.changeAddress;
+    return !!this.to.length &&
+      !!this.from.length &&
+      !!this.inputs.length &&
+      !!this.fee
   }
 
   __getTX() {
@@ -217,16 +216,21 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
 
   setFromAddress(from){
     const self = this;
-    if(_.isArray(from) && from.length){
-      this.transaction.from = _.concat(this.transaction.from, from.map(function (item) {
+    if(_.isArray(from)){
+      const _from = _.map(from, function (item) {
         if (item.change) self.setChangeAddress(item.address);
         return item.address
-      }))
+      });
+      _.each(_from, value => {
+        if(value) this.transaction.from.push(value)
+      })
     }
     else{
       if (from.change) self.setChangeAddress(from.address);
       this.transaction.from.push(from.address);
     }
+    this.transaction.from = _.uniq(this.transaction.from);
+
     return this;
   }
 
@@ -260,7 +264,7 @@ class BitcoinTxBuilder extends transactions.BitcoinTxBuilderInterfce {
   }
 
   calculateFee(fee){
-    if (!fee && this.transaction.to.length) {
+    if (!fee && !!this.transaction.to.length) {
       try {
         const tx = new bitcore.Transaction();
         tx.to(this.transaction.to);

@@ -98,13 +98,6 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
     return address.toString();
   }
 
-  // signMultiSignTx(privateKey, multiSignTx){
-  //   const tx = new bitcore.Transaction(multiSignTx);
-  //   console.log(tx.toObject());
-  //   return tx.sign(new bitcore.PrivateKey(privateKey)).uncheckedSerialize();
-  //
-  // }
-
   createMultiSignTx(data){
     let threshold = data.threshold;
     if (!threshold){

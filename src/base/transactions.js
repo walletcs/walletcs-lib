@@ -99,7 +99,6 @@ class EtherContractUnsignedTxInterface extends EtherUnsignedTxInterface {
 class BitcoinUnsignedTxInterface extends UnsignedTxInterface {
   constructor() {
     super();
-    this.amounts = null;
     this.inputs = null;
     this.changeAddress = null;
     this.fee = null;
