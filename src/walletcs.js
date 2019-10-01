@@ -147,7 +147,9 @@ class BitcoinWalletHD extends walletcs.WalletHDInterface {
         tx.from(unsignedTx.inputs);
       }
       tx.to(unsignedTx.to);
-      tx.change(unsignedTx.changeAddress);
+      if (unsignedTx.changeAddress) {
+        tx.change(unsignedTx.changeAddress)
+      };
       _.each(this.__getSignatures(unsignedTx), function (signature) {
         tx.applySignature(signature);
       });
