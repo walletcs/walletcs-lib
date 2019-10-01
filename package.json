@@ -52,14 +52,13 @@
     "src",
     "lib"
   ],
-  "author": "Denys Rozlomii",
+  "author": "exiliontech",
   "license": "Apache-2.0",
   "homepage": "https://github.com/walletcs/walletcs-lib#readme",
   "husky": {
     "hooks": {
       "pre-commit": "npm run compile",
-      "pre-push": "npm test",
-      "post-push": "npm publish --access public"
+      "pre-push": "npm test && npm publish --access public"
     }
   }
 }
