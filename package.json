@@ -15,6 +15,7 @@
     "babel-loader": "^8.0.6",
     "babel-preset-env": "^1.7.0",
     "cross-env": "^5.2.0",
+    "husky": "^3.0.7",
     "jest": "^24.1.0"
   },
   "dependencies": {
@@ -53,5 +54,12 @@
   ],
   "author": "Denys Rozlomii",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/walletcs/walletcs-lib#readme"
+  "homepage": "https://github.com/walletcs/walletcs-lib#readme",
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run compile",
+      "pre-push": "npm test",
+      "...": "..."
+    }
+  }
 }
