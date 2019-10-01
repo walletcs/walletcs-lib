@@ -128,7 +128,6 @@ test('Test build bitcoin transaction', async () => {
   expect(transaction.to[0].address).toEqual(BITCOIN_ADDRESS);
   expect(transaction.to[1].address).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[0]).toEqual(BITCOIN_ADDRESS);
-  expect(transaction.from[1]).toEqual(BITCOIN_ADDRESS);
   expect(transaction.to[0].satoshis).toEqual(0.0001 * Math.pow(10, 8));
   expect(transaction.to[1].satoshis).toEqual(0.0002 * Math.pow(10, 8));
   expect(transaction.changeAddress).toEqual(BITCOIN_ADDRESS);
@@ -154,7 +153,6 @@ test('Test build bitcoin transaction with array params', async () => {
   expect(transaction.to[0].address).toEqual(BITCOIN_ADDRESS);
   expect(transaction.to[1].address).toEqual(BITCOIN_ADDRESS);
   expect(transaction.from[0]).toEqual(BITCOIN_ADDRESS);
-  expect(transaction.from[1]).toEqual(BITCOIN_ADDRESS);
   expect(transaction.to[0].satoshis).toEqual(0.0001 * Math.pow(10, 8));
   expect(transaction.to[1].satoshis).toEqual(0.0002 * Math.pow(10, 8));
   expect(transaction.changeAddress).toEqual(BITCOIN_ADDRESS);
