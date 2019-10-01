@@ -1,6 +1,6 @@
 {
   "name": "@exiliontech/walletcs",
-  "version": "2.0.18",
+  "version": "2.0.19",
   "scripts": {
     "test": "jest",
     "compile": "babel src --out-dir lib"
@@ -59,7 +59,7 @@
     "hooks": {
       "pre-commit": "npm run compile",
       "pre-push": "npm test",
-      "...": "..."
+      "post-push": "npm publish --access public"
     }
   }
 }
