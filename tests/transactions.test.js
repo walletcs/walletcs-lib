@@ -1,9 +1,10 @@
-const transactions = require('../transactions');
-const structures = require('../base/structures');
-const errors = require('../base/errors');
+import "babel-polyfill"
+
 const ethers = require('ethers');
 const bitcore = require('bitcore-lib');
-"use strict";
+
+const transactions = require('../src/transactions');
+const structures = require('../src/base/structures');
 
 const ETHER_ADDRESS = '0x74930Ad53AE8E4CfBC3FD3FE36920a3BA54dd7E3';
 const BITCOIN_ADDRESS = 'n3rkVDVgppH23BYNyWqULfih1nfesc2t3t';

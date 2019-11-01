@@ -1,6 +1,3 @@
-require('babel-polyfill');
-require("@babel/register");
-
 const errors = require('./errors');
 
 /* Transaction Builders */

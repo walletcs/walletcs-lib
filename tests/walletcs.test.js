@@ -1,10 +1,13 @@
-const wallets = require('../walletcs');
-const transactions = require('../transactions');
-const parsers = require('../parsers');
-const errors = require('../base/errors');
+import "babel-polyfill"
+
 const ethers = require('ethers');
 const bitcore = require('bitcore-lib');
 const _ = require('lodash');
+
+const wallets = require('../src/walletcs');
+const transactions = require('../src/transactions');
+const parsers = require('../src/parsers');
+const errors = require('../src/base/errors');
 
 test('Test create ether pair keys from mnemonic',  async () => {
   const wallet = new wallets.EtherWalletHD();
