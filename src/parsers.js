@@ -1,6 +1,3 @@
-require('babel-polyfill');
-require("@babel/register");
-
 const _ = require('lodash');
 const parsers = require('./base/paresers');
 const errors = require('./base/errors');

@@ -1,6 +1,3 @@
-require('babel-polyfill');
-require("@babel/register");
-
 const PARSING_ERROR = 'Error parser file. Check format file.';
 const TX_FORMAT = 'Invalid unsigned transaction format.';
 const MNEMONIC = 'Invalid mnemonic.';

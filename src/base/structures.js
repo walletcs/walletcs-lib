@@ -1,5 +1,3 @@
-require("@babel/register");
-
 const Outx = {
   address: '',        // String
   satoshis: 0,        // Integer
