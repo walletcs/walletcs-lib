@@ -14,7 +14,6 @@ const FILES_TYPES = {
 class JSONParser extends parsers.FileParserInterface {
   static parseFile(file) {
     try {
-      console.log(file);
       const data = JSON.parse(file);
       const typeFile = JSONParser.getType(file);
 
