@@ -333,20 +333,19 @@ class EtherWalletHD extends walletcs.WalletHDInterface {
 
   async signTransactionByPrivateKey(prv, unsignedTx){
     const tx = this.__builtTx(unsignedTx);
+
     try{
       const wallet = new ethers.Wallet(prv);
       const result = await wallet.sign(tx);
       return result;
     }catch (e) {
-      throw Error(errors.PRIVATE_KEY)
+      throw Error(e)
     }
   }
 
   async signTransactionByxPriv(xpriv, unsignedTx, addresses, depth) {
     for (let i=0; i < addresses.length; i += 1){
       const pair = this.searchAddressInParent(xpriv, addresses[i], depth);
-      console.warn('pair', pair);
-      
       if (pair) {
         const result = await this.signTransactionByPrivateKey(pair.privateKey, unsignedTx);
         return result;

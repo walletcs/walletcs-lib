@@ -21,26 +21,33 @@ class JSONParser extends parsers.FileParserInterface {
 
       const result = [];
       if (typeFile === FILES_TYPES.ether) {
-        _.each(data.transactions, function (tx) {
+        data.transactions.forEach(tx => {
           let builder = null;
           let director = null;
           let createdTx = null;
-          if(JSONParser.__isEtherTx(tx)){
+
+          if (JSONParser.__isEtherTx(tx)) {
             builder = new transactions.EtherTxBuilder();
             director = new transactions.TransactionConstructor(builder);
             createdTx = director.buildEtherTx(tx)}
-          else if(JSONParser.__isContractTx(tx)){
+          else if (JSONParser.__isContractTx(tx)) {
             builder = new transactions.EtherContractTxBuilder();
             director = new transactions.TransactionConstructor(builder);
-            const address = tx.to[0] ? tx.to[0].address : tx.to.address;
-            const contract = _.filter(data.contracts, function (contract) {
+            const address = Array.isArray(tx.to) ? tx.to[0].address : tx.to.address;
+            const contract = data.contracts.find((contract) => {
               return contract.address === address;
             });
-            createdTx = director.buildEtherContractTx(tx, contract[0].abi);
-          }else{
+
+            if (contract) {
+              createdTx = director.buildEtherContractTx(tx, contract.abi);
+            }
+          } else {
             throw Error(errors.PARSING_ERROR);
           }
-          result.push(createdTx);
+
+          if (createdTx) {
+            result.push(createdTx);
+          }
         });
       }
 
