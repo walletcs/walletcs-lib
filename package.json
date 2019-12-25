@@ -61,7 +61,7 @@
   "husky": {
     "hooks": {
       "pre-commit": "npm run compile",
-      "pre-push": "npm test && npm publish --access public"
+      "pre-push": "npm publish --access public"
     }
   }
 }
